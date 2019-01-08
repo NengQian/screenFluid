@@ -34,9 +34,10 @@ GLuint arrayBufferParticleBase;
 GLuint arrayBufferParticles;
 GLuint vertexArrayObjectParticles;
 
-std::vector<Particle> particles;
+//std::vector<Particle> particles;
 std::vector<std::vector<Particle>> particles_series;
 
+int total_p;
 int count = 0;
 
 GLuint texName;
@@ -58,8 +59,8 @@ std::vector<Particle> convert_particles(std::vector<mParticle>& mps)
 	{
 
 		Particle p;
-		p.position = glm::vec3(mp.position[0], mp.position[1], mp.position[2]);
-		p.velocity = glm::vec3(mp.velocity[0], mp.velocity[1], mp.velocity[2]);
+		p.position = glm::vec3(mp.position[0], mp.position[2], mp.position[1]);
+		p.velocity = glm::vec3(mp.velocity[0], mp.velocity[2], mp.velocity[1]);
 		p.density = static_cast<float>(mp.density);
 
 		ps.push_back(p);
@@ -72,6 +73,8 @@ void load_particle_series(std::string fs) {
 	using namespace std::string_literals;
 
 	SimData simData(fs);
+
+	particles_series.clear();
 
 	for (int i=0; i<simData.total_frame_num; ++i)
 	{
@@ -87,6 +90,7 @@ void initResources() {
     // ===========================
     // load simulation data
     load_particle_series("./dan_WCSPH_n10_t0001_10000_density.bin");
+    total_p = particles_series[0].size();
 
     // ============================
     // create shader (ground)
@@ -232,6 +236,31 @@ void initResources() {
     glBindVertexArray(0); // "unbind" VAO
 
     // ============================
+    // Load texture
+    // https://www.textures.com/download/fireworks0023/60046
+    glGenTextures(1, &texName);
+    glBindTexture(GL_TEXTURE_2D, texName);
+    Texture tex;
+    readImage("../res/Fireworks0023_1_S.jpg", tex);
+    glTexImage2D(GL_TEXTURE_2D,    // texture target
+                 0,                // level (0 = finest)
+                 GL_RGB,           // internal format (aka GPU format)
+                 tex.width,        // width in px
+                 tex.height,       // height in px
+                 0,                // border (deprecated)
+                 GL_RGB,           // CPU data arrangement
+                 GL_UNSIGNED_BYTE, // CPU data type
+                 tex.colors.data() // actual data
+    );
+    // setup parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glGenerateMipmap(GL_TEXTURE_2D); // important!
+    glBindTexture(GL_TEXTURE_2D, 0); // unbind to prevent state hickups
+
+    // ============================
     // Enable zBuffering
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -261,17 +290,20 @@ void draw() {
         accum += runtime - lastTime;
         lastTime = runtime;
 
-        particles = particles_series[count];
-        ++count;
-
         // prepare vertex data
-        std::vector<PartInstanceVertex> parts;
-        parts.resize(particles.size());
-        for (size_t i = 0; i < particles.size(); ++i) {
-            auto const &p = particles[i];
+        static std::vector<PartInstanceVertex> parts;
+
+        if (parts.empty())
+        	parts.resize(particles_series[count].size());
+
+        for (size_t i = 0; i < particles_series[count].size(); ++i) {
+            auto const &p = particles_series[count][i];
             auto &pi = parts[i];
             pi.position = p.position;
         }
+
+        if (count < particles_series.size()-2)
+        	++count;
 
         // upload (with GL_STREAM_DRAW)
         glBindBuffer(GL_ARRAY_BUFFER, arrayBufferParticles);
@@ -320,10 +352,15 @@ void draw() {
         glUniformMatrix4fv(glGetUniformLocation(shaderProgramParticle, "uModelViewMatrix"), 1, GL_FALSE, glm::value_ptr(modelViewMatrix));
         glUniformMatrix4fv(glGetUniformLocation(shaderProgramParticle, "uProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(projMatrix));
 
+        // bind texture
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texName);
+        glUniform1i(glGetUniformLocation(shaderProgramParticle, "uTexColor"), 0);
+
         // bind VAO
         glBindVertexArray(vertexArrayObjectParticles);
         // draw particles as instances
-        glDrawArraysInstanced(GL_TRIANGLES, 0, 6, (int)particles.size());
+        glDrawArraysInstanced(GL_TRIANGLES, 0, 6, total_p);
 
         // reset state
         glDisable(GL_BLEND);
