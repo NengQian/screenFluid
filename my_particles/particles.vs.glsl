@@ -1,18 +1,16 @@
 #version 330 core
 
-layout(location = 0) in vec2 aQuadCoordinate;
-layout(location = 1) in vec3 aPosition;
+layout(location = 0) in vec3 aPosition;
 
 uniform mat4 uModelViewMatrix;
 uniform mat4 uProjectionMatrix;
-
-out vec3 vPosition;
-out vec2 vTexCoord;
+//uniform vec2 uScreenSize;
+//uniform float uSpriteSize;
 
 void main() {
-    vTexCoord = aQuadCoordinate;
     vec4 p = uModelViewMatrix * vec4(aPosition, 1.0);
-    p.xy += (aQuadCoordinate * 2 - 1) * .1;
-    vPosition = p.xyz;
+    //vec4 projVoxel = uProjectionMatrix * vec4(uSpriteSize, uSpriteSize, p.z, p.w);
+    //vec2 projSize = uScreenSize * projVoxel.xy / projVoxel.w;
+    //gl_PointSize = 0.1 * (projSize.x+projSize.y);
     gl_Position = uProjectionMatrix * p;
 }

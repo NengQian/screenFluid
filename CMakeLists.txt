@@ -22,6 +22,9 @@ add_subdirectory(soil2)
 # set flags
 add_definitions(-std=c++14)
 
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+
 # add sub-progs
 include_directories(common)
 add_subdirectory(minimal)

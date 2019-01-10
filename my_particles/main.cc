@@ -194,73 +194,24 @@ void initResources() {
 
     // ============================
     // Particle setup
-    glGenBuffers(1, &arrayBufferParticleBase);
     glGenBuffers(1, &arrayBufferParticles);
     glGenVertexArrays(1, &vertexArrayObjectParticles);
-    PartBaseVertex pvertices[6] = {
-            {{0, 0}},
-            {{1, 0}},
-            {{1, 1}},
-
-            {{0, 0}},
-            {{1, 1}},
-            {{0, 1}}
-    };
-    glBindBuffer(GL_ARRAY_BUFFER, arrayBufferParticleBase);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(PartBaseVertex) * 6, pvertices, GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     // setup VAO
     glBindVertexArray(vertexArrayObjectParticles);
-
-    // particle base data
-    {
-        glBindBuffer(GL_ARRAY_BUFFER, arrayBufferParticleBase);
-
-        // loc 0: quad coordinate
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(PartBaseVertex), (void *) offsetof(PartBaseVertex, coord));
-    }
 
     // particle instance data
     {
         glBindBuffer(GL_ARRAY_BUFFER, arrayBufferParticles);
 
-        // loc 1: particle position, DIVISOR 1
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(PartInstanceVertex), (void *) offsetof(PartInstanceVertex, position));
-        glVertexAttribDivisor(1, 1); // set Divisor to 1
+        // loc 0: particle position, DIVISOR 0
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(PartInstanceVertex), (void *) offsetof(PartInstanceVertex, position));
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0); // "unbind" VAO
 
-    // ============================
-    // Load texture
-    // https://www.textures.com/download/fireworks0023/60046
-    glGenTextures(1, &texName);
-    glBindTexture(GL_TEXTURE_2D, texName);
-    Texture tex;
-    readImage("../res/Fireworks0023_1_S.jpg", tex);
-    glTexImage2D(GL_TEXTURE_2D,    // texture target
-                 0,                // level (0 = finest)
-                 GL_RGB,           // internal format (aka GPU format)
-                 tex.width,        // width in px
-                 tex.height,       // height in px
-                 0,                // border (deprecated)
-                 GL_RGB,           // CPU data arrangement
-                 GL_UNSIGNED_BYTE, // CPU data type
-                 tex.colors.data() // actual data
-    );
-    // setup parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glGenerateMipmap(GL_TEXTURE_2D); // important!
-    glBindTexture(GL_TEXTURE_2D, 0); // unbind to prevent state hickups
-
-    // ============================
     // Enable zBuffering
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -320,13 +271,12 @@ void draw() {
     glm::mat4 viewMatrix = interactiveView(&cameraPos, &cameraTarget);
     glm::mat4 modelViewProj = projMatrix * viewMatrix * modelMatrix;
     glm::mat4 modelViewMatrix = viewMatrix * modelMatrix;
+    //glm::vec2 screenSize = glm::vec2(windowWidth, windowHeight);
 
     // Draw ground
     {
         glUseProgram(shaderProgram);
 
-        // set time uniform
-        glUniform1f(glGetUniformLocation(shaderProgram, "uRuntime"), runtime);
         // set camera matrix
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uModelViewProjection"), 1, GL_FALSE, glm::value_ptr(modelViewProj));
 
@@ -339,31 +289,33 @@ void draw() {
     // Draw particles
     {
         // enable additive blending
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_ONE, GL_ONE);
+        //glEnable(GL_BLEND);
+        //glBlendFunc(GL_ONE, GL_ONE);
+
+        //glEnable(GL_PROGRAM_POINT_SIZE);
+
         // disable depth writing
-        glDepthMask(GL_FALSE);
+        //glDepthMask(GL_FALSE);
 
         glUseProgram(shaderProgramParticle);
 
-        // set time uniform
-        glUniform1f(glGetUniformLocation(shaderProgramParticle, "uRuntime"), runtime);
         // set camera matrix
         glUniformMatrix4fv(glGetUniformLocation(shaderProgramParticle, "uModelViewMatrix"), 1, GL_FALSE, glm::value_ptr(modelViewMatrix));
         glUniformMatrix4fv(glGetUniformLocation(shaderProgramParticle, "uProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(projMatrix));
 
-        // bind texture
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texName);
-        glUniform1i(glGetUniformLocation(shaderProgramParticle, "uTexColor"), 0);
+        //glUniform2fv(glGetUniformLocation(shaderProgramParticle, "uScreenSize"), 1, glm::value_ptr(screenSize));
+        //glUniform1f(glGetUniformLocation(shaderProgramParticle, "uSpriteSize"), 10.0);
+
+
 
         // bind VAO
         glBindVertexArray(vertexArrayObjectParticles);
         // draw particles as instances
-        glDrawArraysInstanced(GL_TRIANGLES, 0, 6, total_p);
+        glPointSize(10.0);
+        glDrawArraysInstanced(GL_POINTS, 0, total_p, total_p);
 
         // reset state
-        glDisable(GL_BLEND);
+        //glDisable(GL_BLEND);
         glDepthMask(GL_TRUE);
     }
 }

@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 project(cg1-my_particles)
 
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-
 # Setting EIGEN3_ROOT here lets us override which Eigen library merely3d chooses
 set(EIGEN3_ROOT ${PROJECT_SOURCE_DIR}/extern/eigen_3.3.4)
 
