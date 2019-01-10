@@ -1,0 +1,2 @@
+/usr/bin/ar qc bin/libmy_particlea_lib.a  CMakeFiles/my_particlea_lib.dir/sim_loader.cpp.o
+/usr/bin/ranlib bin/libmy_particlea_lib.a

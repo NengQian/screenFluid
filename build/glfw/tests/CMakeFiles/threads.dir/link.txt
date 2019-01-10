@@ -1,0 +1,1 @@
+/usr/bin/cc     CMakeFiles/threads.dir/threads.c.o CMakeFiles/threads.dir/__/deps/tinycthread.c.o CMakeFiles/threads.dir/__/deps/glad.c.o  -o bin/threads -rdynamic ../src/bin/libglfw3.a -lrt -lm -ldl -lX11 -lpthread -lXrandr -lXinerama -lXi -lXxf86vm -lXcursor -lpthread -lrt -lm -ldl -lX11 -lXrandr -lXinerama -lXi -lXxf86vm -lXcursor 

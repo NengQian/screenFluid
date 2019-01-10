@@ -2,7 +2,7 @@
 
 uniform mat4 uProjectionMatrix;
 uniform float uSpriteSize;
-uniform uint uColorMode;
+uniform int uColorMode;
 
 in vec4 vEyeSpacePosition;
 out vec3 fColor;

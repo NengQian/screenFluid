@@ -1,0 +1,1 @@
+/usr/bin/c++      CMakeFiles/cg1-my_particles.dir/main.cc.o  -o bin/cg1-my_particles -rdynamic bin/libmy_particlea_lib.a ../soil2/bin/libsoil2.a -lX11 ../glfw/src/bin/libglfw3.a ../glad-4.4-core/bin/libglad.a -lrt -lm -ldl -lX11 -lpthread -lXrandr -lXinerama -lXi -lXxf86vm -lXcursor 

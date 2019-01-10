@@ -345,7 +345,7 @@ void draw() {
         glUniform1f(glGetUniformLocation(shaderProgramParticle, "uSpriteSize"), 0.1);
 
         int colorMode = 0; // 0: color map, 1: depth map, 2: normal map
-        glUniform1ui(glGetUniformLocation(shaderProgramParticle, "uColorMode"), colorMode);
+        glUniform1i(glGetUniformLocation(shaderProgramParticle, "uColorMode"), colorMode);
 
         // bind VAO
         glBindVertexArray(vertexArrayObjectParticles);
