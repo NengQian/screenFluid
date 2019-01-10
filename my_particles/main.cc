@@ -192,6 +192,41 @@ void initResources() {
 
     glBindVertexArray(0); // "unbind" VAO
 
+    /*
+    // ============================
+    // Create Depth Map Texture
+    // Generate object name
+    glGenTextures(1, &texNameDepth);
+    // Make texture "current"
+    glBindTexture(GL_TEXTURE_2D, texNameDepth);
+    glTexImage2D(
+    		GL_TEXTURE_2D, 			// texture target
+			0,			   			// level (0 = finest)
+			GL_DEPTH_COMPONENT32,	// internal format (aka GPU format)
+		    1, 1,					// width and height in px
+			0,						// border (deprecated)
+			GL_DEPTH_COMPONENT, GL_FLOAT, // CPU data arrangement and type texData
+			nullptr					// null, only for allocation
+    );
+    // setup parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+
+    // create FBO
+    glGenFramebuffers(1, &framebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+    // set up FBO
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texDepth, 0);
+
+    // check if driver objects
+    auto fboStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if (fboStatus != GL_FRAMEBUFFER_COMPLETE)
+        error("incomplete framebuffer");
+	*/
     // ============================
     // Particle setup
     glGenBuffers(1, &arrayBufferParticles);
@@ -299,6 +334,9 @@ void draw() {
 
         glUseProgram(shaderProgramParticle);
 
+        // bind frame buffer
+        //glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
         // set camera matrix
         glUniformMatrix4fv(glGetUniformLocation(shaderProgramParticle, "uModelViewMatrix"), 1, GL_FALSE, glm::value_ptr(modelViewMatrix));
         glUniformMatrix4fv(glGetUniformLocation(shaderProgramParticle, "uProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(projMatrix));
@@ -306,7 +344,8 @@ void draw() {
         glUniform2fv(glGetUniformLocation(shaderProgramParticle, "uScreenSize"), 1, glm::value_ptr(screenSize));
         glUniform1f(glGetUniformLocation(shaderProgramParticle, "uSpriteSize"), 0.1);
 
-
+        int colorMode = 0; // 0: color map, 1: depth map, 2: normal map
+        glUniform1ui(glGetUniformLocation(shaderProgramParticle, "uColorMode"), colorMode);
 
         // bind VAO
         glBindVertexArray(vertexArrayObjectParticles);
@@ -317,6 +356,7 @@ void draw() {
         //glDisable(GL_BLEND);
         glDepthMask(GL_TRUE);
         glDisable(GL_PROGRAM_POINT_SIZE);
+        //glBindFramebuffer(GL_FRAMEBUFFER, 0); // "unbind"
     }
 }
 
