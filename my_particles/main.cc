@@ -271,7 +271,7 @@ void draw() {
     glm::mat4 viewMatrix = interactiveView(&cameraPos, &cameraTarget);
     glm::mat4 modelViewProj = projMatrix * viewMatrix * modelMatrix;
     glm::mat4 modelViewMatrix = viewMatrix * modelMatrix;
-    //glm::vec2 screenSize = glm::vec2(windowWidth, windowHeight);
+    glm::vec2 screenSize = glm::vec2(windowWidth, windowHeight);
 
     // Draw ground
     {
@@ -292,7 +292,7 @@ void draw() {
         //glEnable(GL_BLEND);
         //glBlendFunc(GL_ONE, GL_ONE);
 
-        //glEnable(GL_PROGRAM_POINT_SIZE);
+        glEnable(GL_PROGRAM_POINT_SIZE);
 
         // disable depth writing
         //glDepthMask(GL_FALSE);
@@ -303,20 +303,20 @@ void draw() {
         glUniformMatrix4fv(glGetUniformLocation(shaderProgramParticle, "uModelViewMatrix"), 1, GL_FALSE, glm::value_ptr(modelViewMatrix));
         glUniformMatrix4fv(glGetUniformLocation(shaderProgramParticle, "uProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(projMatrix));
 
-        //glUniform2fv(glGetUniformLocation(shaderProgramParticle, "uScreenSize"), 1, glm::value_ptr(screenSize));
-        //glUniform1f(glGetUniformLocation(shaderProgramParticle, "uSpriteSize"), 10.0);
+        glUniform2fv(glGetUniformLocation(shaderProgramParticle, "uScreenSize"), 1, glm::value_ptr(screenSize));
+        glUniform1f(glGetUniformLocation(shaderProgramParticle, "uSpriteSize"), 0.1);
 
 
 
         // bind VAO
         glBindVertexArray(vertexArrayObjectParticles);
         // draw particles as instances
-        glPointSize(10.0);
         glDrawArraysInstanced(GL_POINTS, 0, total_p, total_p);
 
         // reset state
         //glDisable(GL_BLEND);
         glDepthMask(GL_TRUE);
+        glDisable(GL_PROGRAM_POINT_SIZE);
     }
 }
 
