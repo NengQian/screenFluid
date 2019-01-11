@@ -1,1 +1,0 @@
-/usr/bin/cc     CMakeFiles/wave.dir/wave.c.o CMakeFiles/wave.dir/__/deps/glad.c.o  -o bin/wave -rdynamic ../src/bin/libglfw3.a -lrt -lm -ldl -lX11 -lpthread -lXrandr -lXinerama -lXi -lXxf86vm -lXcursor 

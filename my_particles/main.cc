@@ -344,7 +344,7 @@ void draw() {
         glUniform2fv(glGetUniformLocation(shaderProgramParticle, "uScreenSize"), 1, glm::value_ptr(screenSize));
         glUniform1f(glGetUniformLocation(shaderProgramParticle, "uSpriteSize"), 0.1);
 
-        int colorMode = 0; // 0: color map, 1: depth map, 2: normal map
+        int colorMode = 1; // 0: color map, 1: depth map, 2: normal map
         glUniform1i(glGetUniformLocation(shaderProgramParticle, "uColorMode"), colorMode);
 
         // bind VAO

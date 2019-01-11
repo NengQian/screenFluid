@@ -1,1 +1,0 @@
-/usr/bin/cc     CMakeFiles/simple.dir/simple.c.o CMakeFiles/simple.dir/__/deps/glad.c.o  -o bin/simple -rdynamic ../src/bin/libglfw3.a -lrt -lm -ldl -lX11 -lpthread -lXrandr -lXinerama -lXi -lXxf86vm -lXcursor 

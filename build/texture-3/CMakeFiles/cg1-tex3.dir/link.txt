@@ -1,1 +1,0 @@
-/usr/bin/c++      CMakeFiles/cg1-tex3.dir/main.cc.o  -o bin/cg1-tex3 -rdynamic ../soil2/bin/libsoil2.a ../glfw/src/bin/libglfw3.a ../glad-4.4-core/bin/libglad.a -lrt -lm -ldl -lX11 -lpthread -lXrandr -lXinerama -lXi -lXxf86vm -lXcursor -lX11 
