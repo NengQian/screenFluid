@@ -16,8 +16,8 @@ std::string resolvePath(std::string filename, std::string relpathOrFile);
 void checkShader(GLuint shaderID);
 void checkProgram(GLuint programID);
 
-int windowWidth = 800;
-int windowHeight = 600;
+int windowWidth = 512;
+int windowHeight = 512;
 
 bool paused = false;
 float runtime = 0.0;

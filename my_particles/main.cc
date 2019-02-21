@@ -34,6 +34,11 @@ GLuint arrayBufferParticleBase;
 GLuint arrayBufferParticles;
 GLuint vertexArrayObjectParticles;
 
+GLuint depth_text;
+GLuint color_text;
+GLuint color_text_smooth;
+GLuint depth_text_smooth;
+GLuint framebuffer;
 //std::vector<Particle> particles;
 std::vector<std::vector<Particle>> particles_series;
 
@@ -45,7 +50,7 @@ GLuint texName;
 GLuint shaderProgram;
 GLuint shaderProgramParticle;
 
-glm::vec3 cameraPos = glm::vec3(1.5, 1.5, 1.5);
+glm::vec3 cameraPos = glm::vec3(0, 0, 0.5);
 glm::vec3 cameraTarget = glm::vec3(0, 0, 0);
 
 
@@ -173,7 +178,7 @@ void initResources() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     // generate VAO descriptor
-    glGenVertexArrays(1, &vertexArrayObjectTriangle);
+    glGenVertexArrays(1, &vertexArrayObjectTriangle);  //what is vertexarray?? why when we configure the vertexarray, we actually only operate the arraybuffer?
     // configure vertex array object (VAO)
     glBindVertexArray(vertexArrayObjectTriangle);
 
@@ -188,45 +193,57 @@ void initResources() {
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *) offsetof(Vertex, normal));
 
     // bind index buffer
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementArrayBufferTriangle);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementArrayBufferTriangle);  //why bind several time??? why need unbind ?
 
-    glBindVertexArray(0); // "unbind" VAO
+    glBindVertexArray(0); // "unbind" VAO     //neng, can we actually see this bind and unbind vao as a pair of braket? like all code inside this bracket pair are setting this VAO, or setting how these data in buffer can be read.
 
-    /*
+    
     // ============================
     // Create Depth Map Texture
     // Generate object name
-    glGenTextures(1, &texNameDepth);
-    // Make texture "current"
-    glBindTexture(GL_TEXTURE_2D, texNameDepth);
-    glTexImage2D(
-    		GL_TEXTURE_2D, 			// texture target
-			0,			   			// level (0 = finest)
-			GL_DEPTH_COMPONENT32,	// internal format (aka GPU format)
-		    1, 1,					// width and height in px
-			0,						// border (deprecated)
-			GL_DEPTH_COMPONENT, GL_FLOAT, // CPU data arrangement and type texData
-			nullptr					// null, only for allocation
-    );
-    // setup parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // glGenTextures(1, &texNameDepth);
+    // // Make texture "current"
+    // glBindTexture(GL_TEXTURE_2D, texNameDepth);
+    // glTexImage2D(
+    // 		GL_TEXTURE_2D, 			// texture target
+	// 		0,			   			// level (0 = finest)
+	// 		GL_DEPTH_COMPONENT32,	// internal format (aka GPU format)
+	// 	    1, 1,					// width and height in px
+	// 		0,						// border (deprecated)
+	// 		GL_DEPTH_COMPONENT, GL_FLOAT, // CPU data arrangement and type texData
+	// 		nullptr					// null, only for allocation
+    // );
+    // // setup parameters
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 
     // create FBO
     glGenFramebuffers(1, &framebuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    glGenTextures(1, &depth_text);
+    glBindTexture(GL_TEXTURE_2D, depth_text);
+    glTexStorage2D(GL_TEXTURE_2D, 9, GL_RGBA8, 512, 512);
 
-    // set up FBO
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texDepth, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    // check if driver objects
-    auto fboStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-    if (fboStatus != GL_FRAMEBUFFER_COMPLETE)
-        error("incomplete framebuffer");
-	*/
+    glGenTextures(1, &depth_text_smooth);
+    glBindTexture(GL_TEXTURE_2D, depth_texture);
+    glTexStorage2D(GL_TEXTURE_2D, 9, GL_DEPTH_COMPONENT32F, 512, 512);
+
+        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, color_texture, 0);
+        glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_texture, 0);
+    // // set up FBO
+    // glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texDepth, 0);
+
+    // // check if driver objects
+    // auto fboStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    // if (fboStatus != GL_FRAMEBUFFER_COMPLETE)
+    //     error("incomplete framebuffer");
+	
     // ============================
     // Particle setup
     glGenBuffers(1, &arrayBufferParticles);
@@ -250,6 +267,8 @@ void initResources() {
     // Enable zBuffering
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
+
+
 }
 
 void deleteResources() {
@@ -302,7 +321,7 @@ void draw() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glm::mat4 modelMatrix = glm::mat4();
-    glm::mat4 projMatrix = glm::perspective(glm::pi<float>() / 2.0f, windowWidth / (float) windowHeight, 0.05f, 30.0f);
+    glm::mat4 projMatrix = glm::perspective(glm::pi<float>() / 2.0f, windowWidth / (float) windowHeight, 1.0f, 7.0f);
     glm::mat4 viewMatrix = interactiveView(&cameraPos, &cameraTarget);
     glm::mat4 modelViewProj = projMatrix * viewMatrix * modelMatrix;
     glm::mat4 modelViewMatrix = viewMatrix * modelMatrix;
@@ -342,13 +361,15 @@ void draw() {
         glUniformMatrix4fv(glGetUniformLocation(shaderProgramParticle, "uProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(projMatrix));
 
         glUniform2fv(glGetUniformLocation(shaderProgramParticle, "uScreenSize"), 1, glm::value_ptr(screenSize));
-        glUniform1f(glGetUniformLocation(shaderProgramParticle, "uSpriteSize"), 0.1);
+        glUniform1f(glGetUniformLocation(shaderProgramParticle, "uSpriteSize"), 0.15);
 
         int colorMode = 1; // 0: color map, 1: depth map, 2: normal map
         glUniform1i(glGetUniformLocation(shaderProgramParticle, "uColorMode"), colorMode);
 
         // bind VAO
         glBindVertexArray(vertexArrayObjectParticles);
+        //glBindFramebuffer(GL_FRAMEBUFFER, framebuffer); // bind vbo
+        //glDrawBuffer(GL_COLOR_ATTACHMENT0);   // we will output the depth as color to this texture
         // draw particles as instances
         glDrawArraysInstanced(GL_POINTS, 0, total_p, total_p);
 

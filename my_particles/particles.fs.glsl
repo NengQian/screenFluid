@@ -4,8 +4,9 @@ uniform mat4 uProjectionMatrix;
 uniform float uSpriteSize;
 uniform int uColorMode;
 
-in vec4 vEyeSpacePosition;
+ in vec4 vEyeSpacePosition;
 out vec3 fColor;
+//layout (depth_any) out float gl_FragDepth;
 
 void main() {
 	vec3 normal;
@@ -31,24 +32,32 @@ void main() {
 
 	// compute fragment depth
 	vec4 pixelPos = vec4(vEyeSpacePosition.xyz + normal*uSpriteSize, 1.0);
-	vec4 clipSpacePos = pixelPos * uProjectionMatrix;
-	float fragDepth = clipSpacePos.z / clipSpacePos.w;
-	//fColor = vec3(1. - fragDepth*0.1, 1. - fragDepth*0.1, 1. - fragDepth*0.1);
-
-	// visualize color
-	//float diffuse = max(0.0, dot(normal, lightDir));
-	//fColor = diffuse * squadColor + ambientLight;
+	// vec4 clipSpacePos = pixelPos * uProjectionMatrix;
+	// float fragDepth = clipSpacePos.z / clipSpacePos.w;
+	vec4 clipSpacePos = uProjectionMatrix*pixelPos;
+	float fragDepth = (clipSpacePos.z / clipSpacePos.w)/2.0 + 0.5 ; // near -1, far 1 -> near 0 far 1
+	//gl_FragDepth = fragDepth;
 
 
-	switch(uColorMode) {
+	int Mode = 3;
+	switch(Mode) {
 	case 0:
 		float diffuse = max(0.0, dot(normal, lightDir));
 		fColor = diffuse * squadColor + ambientLight;
 		break;
 	case 1:
-		fColor = vec3(1. - fragDepth*0.1, 1. - fragDepth*0.1, 1. - fragDepth*0.1);
+		fColor = vec3( fragDepth, fragDepth, fragDepth);
 		break;
 	case 2:
 		fColor = abs(normal);
+		break;
+	case 3:
+		vec4 sphereClipPos =  uProjectionMatrix*vEyeSpacePosition;
+		float sphereDepth = sphereClipPos.z/sphereClipPos.w;
+		sphereDepth = sphereDepth/2.0 + 0.5;
+ 		fColor = vec3(sphereDepth, sphereDepth, sphereDepth);
+		break;
 	}
+
+
 }
