@@ -36,8 +36,8 @@ GLuint vertexArrayObjectParticles;
 
 GLuint depth_text;
 GLuint color_text;
-GLuint color_text_smooth;
-GLuint depth_text_smooth;
+// GLuint color_text_smooth;
+// GLuint depth_text_smooth;
 GLuint framebuffer;
 //std::vector<Particle> particles;
 std::vector<std::vector<Particle>> particles_series;
@@ -49,6 +49,9 @@ GLuint texName;
 
 GLuint shaderProgram;
 GLuint shaderProgramParticle;
+GLuint shaderProgramGetDepth;
+GLuint shaderProgramSmooth;
+GLuint shaderProgramSurface;
 
 glm::vec3 cameraPos = glm::vec3(0, 0, 0.5);
 glm::vec3 cameraTarget = glm::vec3(0, 0, 0);
@@ -125,6 +128,35 @@ void initResources() {
         glDeleteShader(fragmentShader);
     }
     // create shader (particles)
+    // {
+    //     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    //     GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    //     // setup shader source
+    //     std::string codeVS = readFile("particles.vs.glsl");
+    //     std::string codeFS = readFile("particles.fs.glsl");
+    //     const char *cVS = codeVS.c_str(), *cFS = codeFS.c_str();
+    //     glShaderSource(vertexShader, 1, &cVS, nullptr);
+    //     glShaderSource(fragmentShader, 1, &cFS, nullptr);
+    //     // compile shader
+    //     glCompileShader(vertexShader);
+    //     glCompileShader(fragmentShader);
+    //     checkShader(vertexShader);
+    //     checkShader(fragmentShader);
+
+    //     // create shader program
+    //     shaderProgramParticle = glCreateProgram();
+    //     glAttachShader(shaderProgramParticle, vertexShader);
+    //     glAttachShader(shaderProgramParticle, fragmentShader);
+    //     glLinkProgram(shaderProgramParticle);
+
+    //     // delete unused shader
+    //     glDeleteShader(vertexShader);
+    //     glDeleteShader(fragmentShader);
+    // }
+
+
+
+        // create shader (depth texture before smoothing)
     {
         GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
         GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -141,10 +173,105 @@ void initResources() {
         checkShader(fragmentShader);
 
         // create shader program
-        shaderProgramParticle = glCreateProgram();
-        glAttachShader(shaderProgramParticle, vertexShader);
-        glAttachShader(shaderProgramParticle, fragmentShader);
-        glLinkProgram(shaderProgramParticle);
+        shaderProgramGetDepth = glCreateProgram();
+        glAttachShader(shaderProgramGetDepth, vertexShader);
+        glAttachShader(shaderProgramGetDepth, fragmentShader);
+        glLinkProgram(shaderProgramGetDepth);
+
+        // delete unused shader
+        glDeleteShader(vertexShader);
+        glDeleteShader(fragmentShader);
+    }
+
+
+    // create shader (smooth shader)
+    {
+        GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+        GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+        // setup shader source
+        std::string codeVS = readFile("particles.vs.glsl");
+        std::string codeFS = readFile("smooth.fs.glsl");
+        const char *cVS = codeVS.c_str(), *cFS = codeFS.c_str();
+        glShaderSource(vertexShader, 1, &cVS, nullptr);
+        glShaderSource(fragmentShader, 1, &cFS, nullptr);
+        // compile shader
+        glCompileShader(vertexShader);
+        glCompileShader(fragmentShader);
+        checkShader(vertexShader);
+        checkShader(fragmentShader);
+
+        // create shader program
+         shaderProgramSmooth = glCreateProgram();
+        glAttachShader( shaderProgramSmooth, vertexShader);
+        glAttachShader( shaderProgramSmooth, fragmentShader);
+        glLinkProgram( shaderProgramSmooth);
+
+        GLint isLinked = 0;
+        glGetProgramiv( shaderProgramSmooth, GL_LINK_STATUS, &isLinked);
+
+
+        // delete unused shader
+        glDeleteShader(vertexShader);
+        glDeleteShader(fragmentShader);
+    }
+
+
+        // create shader (smooth shader)
+    {
+        GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+        GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+        // setup shader source
+        std::string codeVS = readFile("particles.vs.glsl");
+        std::string codeFS = readFile("smooth.fs.glsl");
+        const char *cVS = codeVS.c_str(), *cFS = codeFS.c_str();
+        glShaderSource(vertexShader, 1, &cVS, nullptr);
+        glShaderSource(fragmentShader, 1, &cFS, nullptr);
+        // compile shader
+        glCompileShader(vertexShader);
+        glCompileShader(fragmentShader);
+        checkShader(vertexShader);
+        checkShader(fragmentShader);
+
+        // create shader program
+         shaderProgramSmooth = glCreateProgram();
+        glAttachShader( shaderProgramSmooth, vertexShader);
+        glAttachShader( shaderProgramSmooth, fragmentShader);
+        glLinkProgram( shaderProgramSmooth);
+
+        GLint isLinked = 0;
+        glGetProgramiv( shaderProgramSmooth, GL_LINK_STATUS, &isLinked);
+
+
+        // delete unused shader
+        glDeleteShader(vertexShader);
+        glDeleteShader(fragmentShader);
+    }
+
+
+        // create surface shader
+    {
+        GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+        GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+        // setup shader source
+        std::string codeVS = readFile("particles.vs.glsl");
+        std::string codeFS = readFile("surface.fs.glsl");
+        const char *cVS = codeVS.c_str(), *cFS = codeFS.c_str();
+        glShaderSource(vertexShader, 1, &cVS, nullptr);
+        glShaderSource(fragmentShader, 1, &cFS, nullptr);
+        // compile shader
+        glCompileShader(vertexShader);
+        glCompileShader(fragmentShader);
+        checkShader(vertexShader);
+        checkShader(fragmentShader);
+
+        // create shader program
+         shaderProgramSurface = glCreateProgram();
+        glAttachShader( shaderProgramSurface, vertexShader);
+        glAttachShader( shaderProgramSurface, fragmentShader);
+        glLinkProgram( shaderProgramSurface);
+
+        GLint isLinked = 0;
+        glGetProgramiv( shaderProgramSurface, GL_LINK_STATUS, &isLinked);
 
         // delete unused shader
         glDeleteShader(vertexShader);
@@ -223,27 +350,31 @@ void initResources() {
     // create FBO
     glGenFramebuffers(1, &framebuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-    glGenTextures(1, &depth_text);
-    glBindTexture(GL_TEXTURE_2D, depth_text);
+    glGenTextures(1, &color_text);
+    glBindTexture(GL_TEXTURE_2D, color_text);
     glTexStorage2D(GL_TEXTURE_2D, 9, GL_RGBA8, 512, 512);
-
+    // close the mipmap?
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    glGenTextures(1, &depth_text_smooth);
-    glBindTexture(GL_TEXTURE_2D, depth_texture);
+    glGenTextures(1, &depth_text);
+    glBindTexture(GL_TEXTURE_2D, depth_text);
     glTexStorage2D(GL_TEXTURE_2D, 9, GL_DEPTH_COMPONENT32F, 512, 512);
 
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, color_texture, 0);
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_texture, 0);
-    // // set up FBO
-    // glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texDepth, 0);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, color_text, 0);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_text, 0);
 
-    // // check if driver objects
-    // auto fboStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-    // if (fboStatus != GL_FRAMEBUFFER_COMPLETE)
-    //     error("incomplete framebuffer");
-	
+    // check if driver objects
+    auto fboStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if (fboStatus != GL_FRAMEBUFFER_COMPLETE)
+        std::cout<<"incomplete framebuffer"<<std::endl;
+
+    static const GLenum draw_buffers[] = { GL_COLOR_ATTACHMENT0 };
+    glDrawBuffers(1, draw_buffers);   // neng: should I run here?
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // create fbo 2, which store 
+
     // ============================
     // Particle setup
     glGenBuffers(1, &arrayBufferParticles);
@@ -326,8 +457,105 @@ void draw() {
     glm::mat4 modelViewProj = projMatrix * viewMatrix * modelMatrix;
     glm::mat4 modelViewMatrix = viewMatrix * modelMatrix;
     glm::vec2 screenSize = glm::vec2(windowWidth, windowHeight);
+    float maxDepth = 7.0;
+    float normalDepth = 10.0;
+    // get depth
+    {
+        glEnable(GL_PROGRAM_POINT_SIZE);
+        
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
-    // Draw ground
+        glViewport(0, 0, windowWidth, windowHeight);
+        glClearColor(0.00, 0.33, 0.62, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glUseProgram(shaderProgramGetDepth);
+
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgramGetDepth, "uModelViewMatrix"), 1, GL_FALSE, glm::value_ptr(modelViewMatrix));
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgramGetDepth, "uProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(projMatrix));
+        glUniform2fv(glGetUniformLocation(shaderProgramGetDepth, "uScreenSize"), 1, glm::value_ptr(screenSize));
+        glUniform1f(glGetUniformLocation(shaderProgramGetDepth, "uSpriteSize"), 0.15);
+        glUniform1f(glGetUniformLocation( shaderProgramGetDepth, "uNormdepth"), normalDepth);
+
+
+        glBindVertexArray(vertexArrayObjectParticles);
+        glDrawArraysInstanced(GL_POINTS, 0, total_p, total_p);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        glDepthMask(GL_TRUE);
+        glDisable(GL_PROGRAM_POINT_SIZE);
+
+    }
+
+
+
+    //smooth in x direction
+    {
+        glEnable(GL_PROGRAM_POINT_SIZE);
+        
+        glBindFramebuffer(GL_FRAMEBUFFER,framebuffer);
+
+
+        // glViewport(0, 0, windowWidth, windowHeight);
+        // glClearColor(0.00, 0.33, 0.62, 1.0);
+        // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
+        glBindTexture(GL_TEXTURE_2D, color_text);
+        //glBindTexture(GL_TEXTURE_2D, depth_text);
+
+        glUseProgram( shaderProgramSmooth);
+
+        glUniformMatrix4fv(glGetUniformLocation( shaderProgramSmooth, "uModelViewMatrix"), 1, GL_FALSE, glm::value_ptr(modelViewMatrix));
+        glUniformMatrix4fv(glGetUniformLocation( shaderProgramSmooth, "uProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(projMatrix));
+        glUniform2fv(glGetUniformLocation( shaderProgramSmooth, "uScreenSize"), 1, glm::value_ptr(screenSize));
+        glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uSpriteSize"), 0.15);
+        glm::vec2 dir_x = glm::vec2(1.0, 0.0);
+        glUniform2fv(glGetUniformLocation( shaderProgramSmooth, "dir"),1 ,glm::value_ptr(dir_x));
+        glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uNormdepth"), normalDepth);
+        glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uMaxdepth"), maxDepth);
+
+
+        glBindVertexArray(vertexArrayObjectParticles);
+        glDrawArraysInstanced(GL_POINTS, 0, total_p, total_p);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        glDepthMask(GL_TRUE);
+        glDisable(GL_PROGRAM_POINT_SIZE);
+    }
+
+        //smooth in y direction
+    {
+        glEnable(GL_PROGRAM_POINT_SIZE);
+        
+        glBindFramebuffer(GL_FRAMEBUFFER,framebuffer);
+
+
+        // glViewport(0, 0, windowWidth, windowHeight);
+        // glClearColor(0.00, 0.33, 0.62, 1.0);
+        // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
+        glBindTexture(GL_TEXTURE_2D, color_text);
+        //glBindTexture(GL_TEXTURE_2D, depth_text);
+
+        glUseProgram( shaderProgramSmooth);
+
+        glUniformMatrix4fv(glGetUniformLocation( shaderProgramSmooth, "uModelViewMatrix"), 1, GL_FALSE, glm::value_ptr(modelViewMatrix));
+        glUniformMatrix4fv(glGetUniformLocation( shaderProgramSmooth, "uProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(projMatrix));
+        glUniform2fv(glGetUniformLocation( shaderProgramSmooth, "uScreenSize"), 1, glm::value_ptr(screenSize));
+        glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uSpriteSize"), 0.15);
+        glm::vec2 dir_y = glm::vec2(0.0, 1.0);
+        glUniform2fv(glGetUniformLocation( shaderProgramSmooth, "dir"),1 ,glm::value_ptr(dir_y));
+        glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uNormdepth"), normalDepth);
+        glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uMaxdepth"), maxDepth);
+
+        glBindVertexArray(vertexArrayObjectParticles);
+        glDrawArraysInstanced(GL_POINTS, 0, total_p, total_p);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        glDepthMask(GL_TRUE);
+        glDisable(GL_PROGRAM_POINT_SIZE);
+    }
+
+            // Draw ground
     {
         glUseProgram(shaderProgram);
 
@@ -340,45 +568,77 @@ void draw() {
         glDrawElements(GL_TRIANGLES, 3 * 2, GL_UNSIGNED_SHORT, 0);
     }
 
-    // Draw particles
+    // draw surface
     {
-        // enable additive blending
-        //glEnable(GL_BLEND);
-        //glBlendFunc(GL_ONE, GL_ONE);
-
         glEnable(GL_PROGRAM_POINT_SIZE);
+        
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        // disable depth writing
-        //glDepthMask(GL_FALSE);
 
-        glUseProgram(shaderProgramParticle);
+        // glViewport(0, 0, windowWidth, windowHeight);
+        // glClearColor(0.00, 0.33, 0.62, 1.0);
+        // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
+        glBindTexture(GL_TEXTURE_2D, color_text);
+        //glBindTexture(GL_TEXTURE_2D, depth_text);
 
-        // bind frame buffer
-        //glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        glUseProgram( shaderProgramSurface);
 
-        // set camera matrix
-        glUniformMatrix4fv(glGetUniformLocation(shaderProgramParticle, "uModelViewMatrix"), 1, GL_FALSE, glm::value_ptr(modelViewMatrix));
-        glUniformMatrix4fv(glGetUniformLocation(shaderProgramParticle, "uProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(projMatrix));
-
-        glUniform2fv(glGetUniformLocation(shaderProgramParticle, "uScreenSize"), 1, glm::value_ptr(screenSize));
-        glUniform1f(glGetUniformLocation(shaderProgramParticle, "uSpriteSize"), 0.15);
-
-        int colorMode = 1; // 0: color map, 1: depth map, 2: normal map
-        glUniform1i(glGetUniformLocation(shaderProgramParticle, "uColorMode"), colorMode);
-
-        // bind VAO
+        glUniformMatrix4fv(glGetUniformLocation( shaderProgramSurface, "uModelViewMatrix"), 1, GL_FALSE, glm::value_ptr(modelViewMatrix));
+        glUniformMatrix4fv(glGetUniformLocation( shaderProgramSurface, "uProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(projMatrix));
+        glUniform2fv(glGetUniformLocation( shaderProgramSurface, "uScreenSize"), 1, glm::value_ptr(screenSize));
+        glUniform1f(glGetUniformLocation( shaderProgramSurface, "uSpriteSize"), 0.15);
+        glUniform1f(glGetUniformLocation( shaderProgramSurface, "uMaxdepth"), maxDepth);
+        glUniform1f(glGetUniformLocation( shaderProgramSurface, "uNormdepth"), normalDepth);
         glBindVertexArray(vertexArrayObjectParticles);
-        //glBindFramebuffer(GL_FRAMEBUFFER, framebuffer); // bind vbo
-        //glDrawBuffer(GL_COLOR_ATTACHMENT0);   // we will output the depth as color to this texture
-        // draw particles as instances
         glDrawArraysInstanced(GL_POINTS, 0, total_p, total_p);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        // reset state
-        //glDisable(GL_BLEND);
         glDepthMask(GL_TRUE);
         glDisable(GL_PROGRAM_POINT_SIZE);
-        //glBindFramebuffer(GL_FRAMEBUFFER, 0); // "unbind"
     }
+
+    // // Draw particles
+    // {
+    //     // enable additive blending
+    //     //glEnable(GL_BLEND);
+    //     //glBlendFunc(GL_ONE, GL_ONE);
+
+    //     // no clean??? neng
+
+    //     glEnable(GL_PROGRAM_POINT_SIZE);
+
+    //     // disable depth writing
+    //     //glDepthMask(GL_FALSE);
+
+    //     glUseProgram(shaderProgramParticle);
+
+    //     // bind frame buffer
+    //     //glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+    //     // set camera matrix
+    //     glUniformMatrix4fv(glGetUniformLocation(shaderProgramParticle, "uModelViewMatrix"), 1, GL_FALSE, glm::value_ptr(modelViewMatrix));
+    //     glUniformMatrix4fv(glGetUniformLocation(shaderProgramParticle, "uProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(projMatrix));
+
+    //     glUniform2fv(glGetUniformLocation(shaderProgramParticle, "uScreenSize"), 1, glm::value_ptr(screenSize));
+    //     glUniform1f(glGetUniformLocation(shaderProgramParticle, "uSpriteSize"), 0.15);
+
+    //     int colorMode = 1; // 0: color map, 1: depth map, 2: normal map
+    //     glUniform1i(glGetUniformLocation(shaderProgramParticle, "uColorMode"), colorMode);
+
+    //     // bind VAO
+    //     glBindVertexArray(vertexArrayObjectParticles);
+    //     //glBindFramebuffer(GL_FRAMEBUFFER, framebuffer); // bind vbo
+    //     //glDrawBuffer(GL_COLOR_ATTACHMENT0);   // we will output the depth as color to this texture
+    //     // draw particles as instances
+    //     glDrawArraysInstanced(GL_POINTS, 0, total_p, total_p);
+
+    //     // reset state
+    //     //glDisable(GL_BLEND);
+    //     glDepthMask(GL_TRUE);
+    //     glDisable(GL_PROGRAM_POINT_SIZE);
+    //     //glBindFramebuffer(GL_FRAMEBUFFER, 0); // "unbind"
+    // }
 }
 
 void onKeyPress(GLFWwindow *window, int key, int scancode, int action, int mods) {
