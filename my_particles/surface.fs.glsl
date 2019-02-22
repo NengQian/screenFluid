@@ -2,12 +2,12 @@
 
 uniform mat4 uProjectionMatrix;
 uniform float uSpriteSize;
+uniform vec2 uScreenSize;
 uniform float uMaxdepth;
 uniform float uNormdepth;
 uniform sampler2D tex;  
 
 
-//in vec4 vs_color; 
 in vec4 vEyeSpacePosition;
 out vec3 fColor;
 
@@ -17,34 +17,66 @@ out vec3 fColor;
 // yes, I need to modify the vertex shader for smoothing and the surface...
 // now I optimized, but then the background disapper...
 
-// vec3 uvToEye(vec2 frag_coord, float depth)
-// {
-//     vec3 eyePos = vec3(0.0);
+// the frag_coord we get here has an origin in lower_left.
+vec3 uvToEye(vec2 frag_coord, float depth)
+{
+    float fx = 1.0;
+    float fy = 1.0;  //focal length, since our near plan in perspective set as 1, so it is 1
+    float posx = (2.0*frag_coord.x / uScreenSize.x - 1.0)*depth; 
+    float posy = (2.0*frag_coord.y/uScreenSize.y - 1.0)*depth;
+    vec3 eyePos = vec3(0.0);
+    eyePos.z = depth;
+    eyePos.x = posx;
+    eyePos.y = posy;
+    return eyePos;
+}
 
-// }
+vec3 getEyePos(vec2 texcoord)
+{
+    float depth = texelFetch(tex, ivec2(texcoord.xy),0).x*uNormdepth;
+    return uvToEye(texcoord, depth);
+}
 
 void main() {
-	// vec3 normal;
-	// normal.xy = 2.0 * gl_PointCoord - 1.0;
-	// float r1 = dot(normal.xy, normal.xy);
-	// if (r1 > 1.0) {
-	//     discard;
-	// } 
-    float depth = texelFetch(tex, ivec2(gl_FragCoord.xy),0).x;
-    if(depth*uNormdepth > uMaxdepth) // means this fragment is not in fluid, but in background
+	vec3 normal;
+	normal.xy = 2.0 * gl_PointCoord - 1.0;
+	float r1 = dot(normal.xy, normal.xy);
+	if (r1 > 1.0) {
+	    discard;
+	} 
+    float depth = texelFetch(tex, ivec2(gl_FragCoord.xy),0).x*uNormdepth;
+    fColor = vec3(depth/uMaxdepth,depth/uMaxdepth,depth/uMaxdepth);
+    if(depth > uMaxdepth) // means this fragment is not in fluid, but in background
         discard;
     
-	fColor = vec3(depth, depth, depth);  //  the depth will directly get from the depth buffer.. so Do nothing here.. but is this correct?
+    vec4 projVoxel = uProjectionMatrix * vec4(uSpriteSize, uSpriteSize, depth, 1.0);
+    vec2 projSize = uScreenSize * projVoxel.xy / projVoxel.w;
+    //float texelSize = 0.5*(projSize.x+projSize.y);
+    float texelSize = 1.0;
 
+    vec3 posEye = uvToEye(gl_FragCoord.xy, depth);
 
+    vec3 ddx =  getEyePos(gl_FragCoord.xy + vec2(texelSize,0.0)) - posEye;
+    vec3 ddx2 = posEye - getEyePos(gl_FragCoord.xy + vec2(-texelSize,0.0));
+    if(abs(ddx.z)>abs(ddx2.z)){
+        ddx = ddx2;
+    }
 
-	// normal.z = -sqrt(1.0 - r1);
+    vec3 ddy = getEyePos(gl_FragCoord.xy + vec2(0.0, texelSize)) - posEye;
+    vec3 ddy2 = posEye - getEyePos(gl_FragCoord.xy + vec2(0.0, -texelSize));
+    if(abs(ddy.z)>abs(ddy2.z)){
+        ddy = ddy2;
+    }
+
+    vec3 n = cross(ddx,ddy);
+    n = normalize(n);
+    //fColor = n;
+
 
 	// vec3 lightDir = vec3(0.0, -1.0, 0.0);
 	// vec3 squadColor = vec3(0.2, 0.5, 1.0);
 	// vec3 ambientLight = vec3(0.1, 0.1, 0.3);
 
-	// normal = normalize(normal);
-    // float diffuse = max(0.0, dot(normal, lightDir));
+    // float diffuse = max(0.0, dot(n, lightDir));
 	// fColor = diffuse * squadColor + ambientLight;
 }

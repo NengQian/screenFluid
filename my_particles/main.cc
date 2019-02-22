@@ -253,7 +253,7 @@ void initResources() {
         GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
         GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
         // setup shader source
-        std::string codeVS = readFile("postprocessing.vs.glsl");
+        std::string codeVS = readFile("particles.vs.glsl");
         std::string codeFS = readFile("surface.fs.glsl");
         const char *cVS = codeVS.c_str(), *cFS = codeFS.c_str();
         glShaderSource(vertexShader, 1, &cVS, nullptr);
@@ -460,20 +460,7 @@ void draw() {
     float maxDepth = 7.0;
     float normalDepth = 10.0;
 
-    // Draw ground
-    {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        glUseProgram(shaderProgram);
-
-        // set camera matrix
-        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uModelViewProjection"), 1, GL_FALSE, glm::value_ptr(modelViewProj));
-
-        // bind VAO
-        glBindVertexArray(vertexArrayObjectTriangle);
-        // draw the first 2 indices as a triangle list
-        glDrawElements(GL_TRIANGLES, 3 * 2, GL_UNSIGNED_SHORT, 0);
-    }
+ 
 
     // get depth
     {
@@ -580,8 +567,8 @@ void draw() {
 
     // draw surface
     {
-        //glEnable(GL_PROGRAM_POINT_SIZE);
-        glDisable(GL_PROGRAM_POINT_SIZE);
+        glEnable(GL_PROGRAM_POINT_SIZE);
+        //glDisable(GL_PROGRAM_POINT_SIZE);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -602,16 +589,29 @@ void draw() {
         glUniform1f(glGetUniformLocation( shaderProgramSurface, "uMaxdepth"), maxDepth);
         glUniform1f(glGetUniformLocation( shaderProgramSurface, "uNormdepth"), normalDepth);
         glBindVertexArray(vertexArrayObjectParticles);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+        //glDrawArrays(GL_TRIANGLES, 0, 6);
 
-        //glDrawArraysInstanced(GL_POINTS, 0, total_p, total_p);
+        glDrawArraysInstanced(GL_POINTS, 0, total_p, total_p);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         glDepthMask(GL_TRUE);
         glDisable(GL_PROGRAM_POINT_SIZE);
     }
 
+   // Draw ground
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+        glUseProgram(shaderProgram);
+
+        // set camera matrix
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uModelViewProjection"), 1, GL_FALSE, glm::value_ptr(modelViewProj));
+
+        // bind VAO
+        glBindVertexArray(vertexArrayObjectTriangle);
+        // draw the first 2 indices as a triangle list
+        glDrawElements(GL_TRIANGLES, 3 * 2, GL_UNSIGNED_SHORT, 0);
+    }
     // // Draw particles
     // {
     //     // enable additive blending
