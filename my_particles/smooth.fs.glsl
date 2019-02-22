@@ -2,21 +2,26 @@
                                                                                          
 uniform sampler2D tex;  
 uniform vec2 dir;
+uniform float uMaxdepth;
+uniform float uNormdepth;  
                                                        
 out vec4 color;                                                                                                                                                            
-uniform float uMaxdepth;
-uniform float uNormdepth;                                                          
+                                                        
                                                                                                         
 void main(void)                                                                   
 {                                                                                 
 
 
-    vec3 normal;
-	normal.xy = 2.0 * gl_PointCoord - 1.0;
-	float r1 = dot(normal.xy, normal.xy);
-	if (r1 > 1.0) {
-	    discard;
-	}
+    // vec3 normal;
+	// normal.xy = 2.0 * gl_PointCoord - 1.0;
+	// float r1 = dot(normal.xy, normal.xy);
+	// if (r1 > 1.0) {
+	//     discard;
+	// }
+    float checkdepth = texelFetch(tex, ivec2(gl_FragCoord.xy),0).x*uNormdepth;
+    if(checkdepth>uMaxdepth)
+        discard; 
+
 
 
     float sum = 0.0; 

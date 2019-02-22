@@ -2,7 +2,6 @@
 
 uniform mat4 uProjectionMatrix;
 uniform float uSpriteSize;
-uniform int uColorMode;
 uniform float uMaxdepth;
 uniform float uNormdepth;
 uniform sampler2D tex;  
@@ -16,13 +15,21 @@ out vec3 fColor;
 // when we go to this surface shader, we actually only need to consider these surface's pixel, which is exactly pixel's number
 // however, since we take fragement from vertex shader, we then actually do many useless computation...
 // yes, I need to modify the vertex shader for smoothing and the surface...
+// now I optimized, but then the background disapper...
+
+// vec3 uvToEye(vec2 frag_coord, float depth)
+// {
+//     vec3 eyePos = vec3(0.0);
+
+// }
+
 void main() {
-	vec3 normal;
-	normal.xy = 2.0 * gl_PointCoord - 1.0;
-	float r1 = dot(normal.xy, normal.xy);
-	if (r1 > 1.0) {
-	    discard;
-	} 
+	// vec3 normal;
+	// normal.xy = 2.0 * gl_PointCoord - 1.0;
+	// float r1 = dot(normal.xy, normal.xy);
+	// if (r1 > 1.0) {
+	//     discard;
+	// } 
     float depth = texelFetch(tex, ivec2(gl_FragCoord.xy),0).x;
     if(depth*uNormdepth > uMaxdepth) // means this fragment is not in fluid, but in background
         discard;

@@ -24,7 +24,7 @@ add_definitions(-std=c++14)
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-
+set(CMAKE_BUILD_TYPE "Release")
 # add sub-progs
 include_directories(common)
 add_subdirectory(minimal)
