@@ -5,13 +5,19 @@ uniform float uSpriteSize;
 uniform int uColorMode;
 uniform float uNormdepth;
 
+//in vec4 vs_color;
 in vec4 vEyeSpacePosition;
+in float vDensity;
 out vec4 fColor;
 
 
 
 
 void main() {
+
+	if(vDensity<200)
+		discard;
+
 	vec3 normal;
 
 	normal.xy = 2.0 * gl_PointCoord - 1.0;
@@ -32,17 +38,5 @@ void main() {
 	    float depth =  -pixelPos.z/uNormdepth; // since z here is negative in eyespace...
 
 	    fColor = vec4(depth, depth, depth, 1.0); // all in all, which depth should I send???
-
-
-
-		// // do test, we compute normal here.
-		// depth = depth*uNormdepth;
-		// vec4 projVoxel = uProjectionMatrix * vec4(uSpriteSize, uSpriteSize, depth, 1.0);
-    	// vec2 projSize = uScreenSize * projVoxel.xy / projVoxel.w;
-    	// //float texelSize = 0.5*(projSize.x+projSize.y);
-    	// float texelSize = 1.0;
-
- 
-
 	}
 }

@@ -11,6 +11,7 @@ uniform sampler2D tex;
 in vec4 vEyeSpacePosition;
 out vec3 fColor;
 
+
 // actually we waste a lot of time here.
 // when we go to this surface shader, we actually only need to consider these surface's pixel, which is exactly pixel's number
 // however, since we take fragement from vertex shader, we then actually do many useless computation...
@@ -25,7 +26,7 @@ vec3 uvToEye(vec2 frag_coord, float depth)
     float posx = (2.0*frag_coord.x / uScreenSize.x - 1.0)*depth; 
     float posy = (2.0*frag_coord.y/uScreenSize.y - 1.0)*depth;
     vec3 eyePos = vec3(0.0);
-    eyePos.z = depth;
+    eyePos.z = -depth;
     eyePos.x = posx;
     eyePos.y = posy;
     return eyePos;
@@ -45,8 +46,8 @@ void main() {
 	    discard;
 	} 
     float depth = texelFetch(tex, ivec2(gl_FragCoord.xy),0).x*uNormdepth;
-    //float visDepth = depth*0.7;
-    //fColor = vec3(visDepth,visDepth,visDepth);
+    // float visDepth = depth*0.3;
+    // fColor = vec3(visDepth,visDepth,visDepth);
     if(depth > uMaxdepth) // means this fragment is not in fluid, but in background
         discard;
     
@@ -71,11 +72,10 @@ void main() {
 
     vec3 n = cross(ddx,ddy);
     n = normalize(n);
-    //fColor = n;
+    //fColor = abs(n);
 
 
-    // normal.z = -sqrt(1.0 - r1);
-	// normal = normalize(normal);
+
 
 
 	vec3 lightDir = vec3(0.0, -1.0, 0.0);

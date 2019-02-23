@@ -3,23 +3,20 @@
 uniform sampler2D tex;  
 uniform vec2 dir;
 uniform float uMaxdepth;
+uniform mat4 uProjectionMatrix;
+uniform vec2 uScreenSize;
+uniform float uSpriteSize;                               
+
+ 
 uniform float uNormdepth;  
-                                                       
 out vec4 color;                                                                                                                                                            
-                                                        
                                                                                                         
 void main(void)                                                                   
-{                                                                                 
+{
+                                                                                
 
-
-    // vec3 normal;
-	// normal.xy = 2.0 * gl_PointCoord - 1.0;
-	// float r1 = dot(normal.xy, normal.xy);
-	// if (r1 > 1.0) {
-	//     discard;
-	// }
-    float checkdepth = texelFetch(tex, ivec2(gl_FragCoord.xy),0).x*uNormdepth;
-    if(checkdepth>uMaxdepth)
+    float curDepth = texelFetch(tex, ivec2(gl_FragCoord.xy),0).x*uNormdepth;
+    if(curDepth>uMaxdepth)
         discard; 
 
 
@@ -33,7 +30,10 @@ void main(void)
     //the amount to blur, i.e. how far off center to sample from 
 	//1.0 -> blur by one pixel
 	//2.0 -> blur by two pixels, etc.
-	float blur = 1; //  
+    vec4 projVoxel = uProjectionMatrix * vec4(uSpriteSize, uSpriteSize, curDepth, 1.0);
+    vec2 projSize = uScreenSize * projVoxel.xy / projVoxel.w;   // here we just want to calculate the sprite size at p.z this distance... So if the z bigger, the sprite smaller.
+    float blur = 2 * (projSize.x+projSize.y); // radius of a particle
+	//float blur = 1; //  
 
     const float guass_weight[] = float[9](
                 0.063327, 0.093095, 0.122589, 0.144599, 0.152781, 0.144599, 0.122589, 0.093095, 0.063327);
@@ -41,7 +41,10 @@ void main(void)
     for(i = -gauss_radius;i<=gauss_radius;++i)
     {
         ivec2 step = ivec2(i*blur*hstep, i*blur*vstep);
-        float depth = texelFetch(tex, ivec2(gl_FragCoord.xy + step),0).x; // along x direction, and I only take x's value, since value here are the same;
+        float depth = texelFetch(tex, ivec2(gl_FragCoord.xy + step),0).x*uNormdepth; // along x direction, and I only take x's value, since value here are the same;
+        if(depth > uMaxdepth)  // boundary case
+            depth = curDepth;
+        depth = depth/uNormdepth; // do normaization again
         sum += depth*guass_weight[i+4];   
     }
     color = vec4(sum,sum,sum,1.0);
