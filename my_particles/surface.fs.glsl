@@ -46,42 +46,44 @@ void main() {
 	    discard;
 	} 
     float depth = texelFetch(tex, ivec2(gl_FragCoord.xy),0).x*uNormdepth;
-    // float visDepth = depth*0.3;
-    // fColor = vec3(visDepth,visDepth,visDepth);
+
     if(depth > uMaxdepth) // means this fragment is not in fluid, but in background
         discard;
+
+        float visDepth = depth*0.1;
+    fColor = vec3(visDepth,visDepth,visDepth);
     
-    vec4 projVoxel = uProjectionMatrix * vec4(uSpriteSize, uSpriteSize, depth, 1.0);
-    vec2 projSize = uScreenSize * projVoxel.xy / projVoxel.w;
-    //float texelSize = 0.5*(projSize.x+projSize.y);
-    float texelSize = 1.0;
+    // vec4 projVoxel = uProjectionMatrix * vec4(uSpriteSize, uSpriteSize, depth, 1.0);
+    // vec2 projSize = uScreenSize * projVoxel.xy / projVoxel.w;
+    // //float texelSize = 0.5*(projSize.x+projSize.y);
+    // float texelSize = 1.0;
 
-    vec3 posEye = uvToEye(gl_FragCoord.xy, depth);
+    // vec3 posEye = uvToEye(gl_FragCoord.xy, depth);
 
-    vec3 ddx =  getEyePos(gl_FragCoord.xy + vec2(texelSize,0.0)) - posEye;
-    vec3 ddx2 = posEye - getEyePos(gl_FragCoord.xy + vec2(-texelSize,0.0));
-    if(abs(ddx.z)>abs(ddx2.z)){
-        ddx = ddx2;
-    }
+    // vec3 ddx =  getEyePos(gl_FragCoord.xy + vec2(texelSize,0.0)) - posEye;
+    // vec3 ddx2 = posEye - getEyePos(gl_FragCoord.xy + vec2(-texelSize,0.0));
+    // if(abs(ddx.z)>abs(ddx2.z)){
+    //     ddx = ddx2;
+    // }
 
-    vec3 ddy = getEyePos(gl_FragCoord.xy + vec2(0.0, texelSize)) - posEye;
-    vec3 ddy2 = posEye - getEyePos(gl_FragCoord.xy + vec2(0.0, -texelSize));
-    if(abs(ddy.z)>abs(ddy2.z)){
-        ddy = ddy2;
-    }
+    // vec3 ddy = getEyePos(gl_FragCoord.xy + vec2(0.0, texelSize)) - posEye;
+    // vec3 ddy2 = posEye - getEyePos(gl_FragCoord.xy + vec2(0.0, -texelSize));
+    // if(abs(ddy.z)>abs(ddy2.z)){
+    //     ddy = ddy2;
+    // }
 
-    vec3 n = cross(ddx,ddy);
-    n = normalize(n);
-    //fColor = abs(n);
-
-
+    // vec3 n = cross(ddx,ddy);
+    // n = normalize(n);
+    // fColor = abs(n);
 
 
 
-	vec3 lightDir = vec3(0.0, -1.0, 0.0);
-	vec3 squadColor = vec3(1.0, 0.5, 1.0);
-	vec3 ambientLight = vec3(0.1, 0.1, 0.3);
 
-    float diffuse = max(0.0, dot(n, lightDir));
-	fColor = diffuse * squadColor + ambientLight;
+
+	// vec3 lightDir = vec3(0.0, -1.0, 0.0);
+	// vec3 squadColor = vec3(1.0, 0.5, 1.0);
+	// vec3 ambientLight = vec3(0.1, 0.1, 0.3);
+
+    // float diffuse = max(0.0, dot(n, lightDir));
+	// fColor = diffuse * squadColor + ambientLight;
 }

@@ -36,11 +36,11 @@ GLuint arrayBufferParticleBase;
 GLuint arrayBufferParticles;
 GLuint vertexArrayObjectParticles;
 
-GLuint depth_text;
-GLuint color_text;
-// GLuint color_text_smooth;
-// GLuint depth_text_smooth;
-GLuint framebuffer;
+
+
+GLuint framebuffers[3];
+GLuint color_texts[3];
+GLuint depth_texts[3];
 //std::vector<Particle> particles;
 std::vector<std::vector<Particle>> particles_series;
 
@@ -328,23 +328,24 @@ void initResources() {
 
     
 
+    for(int i =0;i<3;++i)
+    {
+        glGenFramebuffers(1, &framebuffers[i]);
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[i]);
 
-    // create FBO
-    glGenFramebuffers(1, &framebuffer);
-    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-    glGenTextures(1, &color_text);
-    glBindTexture(GL_TEXTURE_2D, color_text);
-    glTexStorage2D(GL_TEXTURE_2D, 9, GL_RGBA8, 512, 512);
-    // close the mipmap?
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glGenTextures(1, &color_texts[i]);
+        glBindTexture(GL_TEXTURE_2D, color_texts[i]);
+        glTexStorage2D(GL_TEXTURE_2D, 9, GL_RGBA8, 512, 512);
+        // close the mipmap?
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    glGenTextures(1, &depth_text);
-    glBindTexture(GL_TEXTURE_2D, depth_text);
+    glGenTextures(1, &depth_texts[i]);
+    glBindTexture(GL_TEXTURE_2D, depth_texts[i]);
     glTexStorage2D(GL_TEXTURE_2D, 9, GL_DEPTH_COMPONENT32F, 512, 512);
 
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, color_text, 0);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_text, 0);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, color_texts[i], 0);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_texts[i], 0);
 
     // check if driver objects
     auto fboStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -354,9 +355,34 @@ void initResources() {
     static const GLenum draw_buffers[] = { GL_COLOR_ATTACHMENT0 };
     glDrawBuffers(1, draw_buffers);   // neng: should I run here?
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
 
-    // create fbo 2, which store 
+    // // create fbo 2, which store y direction
+    // // create FBO
+    // glGenFramebuffers(1, &framebufferY);
+    // glBindFramebuffer(GL_FRAMEBUFFER, framebufferY);
+    // glGenTextures(1, &color_text_y);
+    // glBindTexture(GL_TEXTURE_2D, color_text_y);
+    // glTexStorage2D(GL_TEXTURE_2D, 9, GL_RGBA8, 512, 512);
+    // // close the mipmap?
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+    // glGenTextures(1, &depth_text_y);
+    // glBindTexture(GL_TEXTURE_2D, depth_text_y);
+    // glTexStorage2D(GL_TEXTURE_2D, 9, GL_DEPTH_COMPONENT32F, 512, 512);
+
+    // glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, color_text_y, 0);
+    // glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_text_y, 0);
+
+    // // check if driver objects
+    // auto fboStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    // if (fboStatus != GL_FRAMEBUFFER_COMPLETE)
+    //     std::cout<<"incomplete framebuffer"<<std::endl;
+
+    // static const GLenum draw_buffers[] = { GL_COLOR_ATTACHMENT0 };
+    // glDrawBuffers(1, draw_buffers);   // neng: should I run here?
+    // glBindFramebuffer(GL_FRAMEBUFFER, 0);
     // ============================
     // Particle setup
     glGenBuffers(1, &arrayBufferParticles);
@@ -456,7 +482,7 @@ void draw() {
         // glViewport(0, 0, windowWidth, windowHeight);
         // glClearColor(0.00, 0.33, 0.62, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[0]);
         glViewport(0, 0, windowWidth, windowHeight);
         glClearColor(1.00, 1.00, 1.00, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -480,18 +506,19 @@ void draw() {
 
 
 
-    // //smooth in x direction
+    //smooth in x direction
     {
         //glEnable(GL_PROGRAM_POINT_SIZE);
         glDisable(GL_PROGRAM_POINT_SIZE);
-        glBindFramebuffer(GL_FRAMEBUFFER,framebuffer);
+        glDisable(GL_DEPTH_TEST);
+        glBindFramebuffer(GL_FRAMEBUFFER,framebuffers[1]);
 
 
-        // glViewport(0, 0, windowWidth, windowHeight);
-        // glClearColor(0.00, 0.33, 0.62, 1.0);
-        // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glViewport(0, 0, windowWidth, windowHeight);
+        glClearColor(1.0, 1.0, 1.0, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
-        glBindTexture(GL_TEXTURE_2D, color_text);
+        glBindTexture(GL_TEXTURE_2D, color_texts[0]);
         //glBindTexture(GL_TEXTURE_2D, depth_text);
 
         glUseProgram( shaderProgramSmooth);
@@ -508,6 +535,7 @@ void draw() {
 
         glBindVertexArray(vertexArrayObjectParticles);
         glDrawArrays(GL_TRIANGLES, 0, 6);
+        glBindTexture(GL_TEXTURE_2D, 0);
 
         //glDrawArraysInstanced(GL_POINTS, 0, total_p, total_p);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -521,14 +549,14 @@ void draw() {
         //glEnable(GL_PROGRAM_POINT_SIZE);
         glDisable(GL_PROGRAM_POINT_SIZE);
 
-        glBindFramebuffer(GL_FRAMEBUFFER,framebuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER,framebuffers[2]);
 
 
-        // glViewport(0, 0, windowWidth, windowHeight);
-        // glClearColor(0.00, 0.33, 0.62, 1.0);
-        // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glViewport(0, 0, windowWidth, windowHeight);
+        glClearColor(1.0, 1.0, 1.0, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
-        glBindTexture(GL_TEXTURE_2D, color_text);
+        glBindTexture(GL_TEXTURE_2D, color_texts[1]);
         //glBindTexture(GL_TEXTURE_2D, depth_text);
 
         glUseProgram( shaderProgramSmooth);
@@ -544,6 +572,7 @@ void draw() {
 
         glBindVertexArray(vertexArrayObjectParticles);
         glDrawArrays(GL_TRIANGLES, 0, 6);
+        glBindTexture(GL_TEXTURE_2D, 0);
 
     //    glDrawArraysInstanced(GL_POINTS, 0, total_p, total_p);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -562,11 +591,11 @@ void draw() {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
-        // glViewport(0, 0, windowWidth, windowHeight);
-        // glClearColor(0.00, 0.33, 0.62, 1.0);
-        // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glViewport(0, 0, windowWidth, windowHeight);
+        glClearColor(0.00, 0.33, 0.62, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
-        glBindTexture(GL_TEXTURE_2D, color_text);
+        glBindTexture(GL_TEXTURE_2D, color_texts[2]);
         //glBindTexture(GL_TEXTURE_2D, depth_text);
 
         glUseProgram( shaderProgramSurface);
@@ -581,6 +610,8 @@ void draw() {
         //glDrawArrays(GL_TRIANGLES, 0, 6);
 
         glDrawArraysInstanced(GL_POINTS, 0, total_p, total_p);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         glDepthMask(GL_TRUE);
