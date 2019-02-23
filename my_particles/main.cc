@@ -335,7 +335,7 @@ void initResources() {
 
         glGenTextures(1, &color_texts[i]);
         glBindTexture(GL_TEXTURE_2D, color_texts[i]);
-        glTexStorage2D(GL_TEXTURE_2D, 9, GL_RGBA8, 512, 512);
+        glTexStorage2D(GL_TEXTURE_2D, 9, GL_RGBA32F, 512, 512);
         // close the mipmap?
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -473,16 +473,19 @@ void draw() {
     glm::vec2 screenSize = glm::vec2(windowWidth, windowHeight);
     float maxDepth = 7.0;
     float normalDepth = 10.0;
+    float spriteSize = 0.20;
 
  
 
     // get depth
     {
         glEnable(GL_PROGRAM_POINT_SIZE);
+
         // glViewport(0, 0, windowWidth, windowHeight);
         // glClearColor(0.00, 0.33, 0.62, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[0]);
+
         glViewport(0, 0, windowWidth, windowHeight);
         glClearColor(1.00, 1.00, 1.00, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -491,7 +494,7 @@ void draw() {
         glUniformMatrix4fv(glGetUniformLocation(shaderProgramGetDepth, "uModelViewMatrix"), 1, GL_FALSE, glm::value_ptr(modelViewMatrix));
         glUniformMatrix4fv(glGetUniformLocation(shaderProgramGetDepth, "uProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(projMatrix));
         glUniform2fv(glGetUniformLocation(shaderProgramGetDepth, "uScreenSize"), 1, glm::value_ptr(screenSize));
-        glUniform1f(glGetUniformLocation(shaderProgramGetDepth, "uSpriteSize"), 0.15);
+        glUniform1f(glGetUniformLocation(shaderProgramGetDepth, "uSpriteSize"), spriteSize);
         glUniform1f(glGetUniformLocation( shaderProgramGetDepth, "uNormdepth"), normalDepth);
 
 
@@ -510,7 +513,7 @@ void draw() {
     {
         //glEnable(GL_PROGRAM_POINT_SIZE);
         glDisable(GL_PROGRAM_POINT_SIZE);
-        glDisable(GL_DEPTH_TEST);
+        //glDisable(GL_DEPTH_TEST);
         glBindFramebuffer(GL_FRAMEBUFFER,framebuffers[1]);
 
 
@@ -526,7 +529,7 @@ void draw() {
         glUniformMatrix4fv(glGetUniformLocation( shaderProgramSmooth, "uModelViewMatrix"), 1, GL_FALSE, glm::value_ptr(modelViewMatrix));
         glUniformMatrix4fv(glGetUniformLocation( shaderProgramSmooth, "uProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(projMatrix));
         glUniform2fv(glGetUniformLocation( shaderProgramSmooth, "uScreenSize"), 1, glm::value_ptr(screenSize));
-        glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uSpriteSize"), 0.15);
+        glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uSpriteSize"), spriteSize);
         glm::vec2 dir_x = glm::vec2(1.0, 0.0);
         glUniform2fv(glGetUniformLocation( shaderProgramSmooth, "dir"),1 ,glm::value_ptr(dir_x));
         glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uNormdepth"), normalDepth);
@@ -564,7 +567,7 @@ void draw() {
         glUniformMatrix4fv(glGetUniformLocation( shaderProgramSmooth, "uModelViewMatrix"), 1, GL_FALSE, glm::value_ptr(modelViewMatrix));
         glUniformMatrix4fv(glGetUniformLocation( shaderProgramSmooth, "uProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(projMatrix));
         glUniform2fv(glGetUniformLocation( shaderProgramSmooth, "uScreenSize"), 1, glm::value_ptr(screenSize));
-        glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uSpriteSize"), 0.15);
+        glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uSpriteSize"), spriteSize);
         glm::vec2 dir_y = glm::vec2(0.0, 1.0);
         glUniform2fv(glGetUniformLocation( shaderProgramSmooth, "dir"),1 ,glm::value_ptr(dir_y));
         glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uNormdepth"), normalDepth);
@@ -603,7 +606,7 @@ void draw() {
         glUniformMatrix4fv(glGetUniformLocation( shaderProgramSurface, "uModelViewMatrix"), 1, GL_FALSE, glm::value_ptr(modelViewMatrix));
         glUniformMatrix4fv(glGetUniformLocation( shaderProgramSurface, "uProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(projMatrix));
         glUniform2fv(glGetUniformLocation( shaderProgramSurface, "uScreenSize"), 1, glm::value_ptr(screenSize));
-        glUniform1f(glGetUniformLocation( shaderProgramSurface, "uSpriteSize"), 0.15);
+        glUniform1f(glGetUniformLocation( shaderProgramSurface, "uSpriteSize"), spriteSize);
         glUniform1f(glGetUniformLocation( shaderProgramSurface, "uMaxdepth"), maxDepth);
         glUniform1f(glGetUniformLocation( shaderProgramSurface, "uNormdepth"), normalDepth);
         glBindVertexArray(vertexArrayObjectParticles);
