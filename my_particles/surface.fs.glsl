@@ -45,7 +45,8 @@ void main() {
 	    discard;
 	} 
     float depth = texelFetch(tex, ivec2(gl_FragCoord.xy),0).x*uNormdepth;
-    fColor = vec3(depth/uMaxdepth,depth/uMaxdepth,depth/uMaxdepth);
+    //float visDepth = depth*0.7;
+    //fColor = vec3(visDepth,visDepth,visDepth);
     if(depth > uMaxdepth) // means this fragment is not in fluid, but in background
         discard;
     
@@ -73,10 +74,14 @@ void main() {
     //fColor = n;
 
 
-	// vec3 lightDir = vec3(0.0, -1.0, 0.0);
-	// vec3 squadColor = vec3(0.2, 0.5, 1.0);
-	// vec3 ambientLight = vec3(0.1, 0.1, 0.3);
+    // normal.z = -sqrt(1.0 - r1);
+	// normal = normalize(normal);
 
-    // float diffuse = max(0.0, dot(n, lightDir));
-	// fColor = diffuse * squadColor + ambientLight;
+
+	vec3 lightDir = vec3(0.0, -1.0, 0.0);
+	vec3 squadColor = vec3(1.0, 0.5, 1.0);
+	vec3 ambientLight = vec3(0.1, 0.1, 0.3);
+
+    float diffuse = max(0.0, dot(n, lightDir));
+	fColor = diffuse * squadColor + ambientLight;
 }

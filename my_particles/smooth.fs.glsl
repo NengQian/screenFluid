@@ -42,7 +42,7 @@ void main(void)
     {
         ivec2 step = ivec2(i*blur*hstep, i*blur*vstep);
         float depth = texelFetch(tex, ivec2(gl_FragCoord.xy + step),0).x; // along x direction, and I only take x's value, since value here are the same;
-        sum += depth*guass_weight[i+2];   
+        sum += depth*guass_weight[i+4];   
     }
     color = vec4(sum,sum,sum,1.0);
     
