@@ -340,21 +340,21 @@ void initResources() {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    glGenTextures(1, &depth_texts[i]);
-    glBindTexture(GL_TEXTURE_2D, depth_texts[i]);
-    glTexStorage2D(GL_TEXTURE_2D, 9, GL_DEPTH_COMPONENT32F, 512, 512);
+        // glGenTextures(1, &depth_texts[i]);
+        // glBindTexture(GL_TEXTURE_2D, depth_texts[i]);
+        // glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT32F, 512, 512);
 
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, color_texts[i], 0);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_texts[i], 0);
+        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, color_texts[i], 0);
+        // glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_texts[i], 0);
 
-    // check if driver objects
-    auto fboStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-    if (fboStatus != GL_FRAMEBUFFER_COMPLETE)
-        std::cout<<"incomplete framebuffer"<<std::endl;
+        // check if driver objects
+        auto fboStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        if (fboStatus != GL_FRAMEBUFFER_COMPLETE)
+            std::cout<<"incomplete framebuffer"<<std::endl;
 
-    static const GLenum draw_buffers[] = { GL_COLOR_ATTACHMENT0 };
-    glDrawBuffers(1, draw_buffers);   // neng: should I run here?
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        static const GLenum draw_buffers[] = { GL_COLOR_ATTACHMENT0 };
+        glDrawBuffers(1, draw_buffers);   // neng: should I run here?
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     // // create fbo 2, which store y direction
@@ -408,19 +408,32 @@ void initResources() {
     glBindVertexArray(0); // "unbind" VAO
 
     // Enable zBuffering
+    glDepthMask(GL_TRUE);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
-
-
 }
 
 void deleteResources() {
     // proper cleanup of resources
     glDeleteVertexArrays(1, &vertexArrayObjectTriangle);
     glDeleteBuffers(1, &arrayBufferTriangle);
+    glDeleteBuffers(1, &elementArrayBufferTriangle);
+
+    glDeleteVertexArrays(1, &vertexArrayObjectParticles);
+    glDeleteBuffers(1, &arrayBufferParticles);
+
+    for (int i=0; i<3; ++i)
+    {
+        glDeleteFramebuffers(1, &framebuffers[i]);
+        glDeleteTextures(1, &color_texts[i]);
+        // glDeleteTextures(1, &depth_texts[i]);
+    }
 
     glUseProgram(0);
     glDeleteProgram(shaderProgram);
+    glDeleteProgram(shaderProgramGetDepth);
+    glDeleteProgram(shaderProgramSmooth);
+    glDeleteProgram(shaderProgramSurface);
 }
 
 float randf(float min, float max) {
@@ -462,7 +475,7 @@ void draw() {
     }
 
     glViewport(0, 0, windowWidth, windowHeight);
-    glClearColor(0.00, 0.33, 0.62, 1.0);
+    glClearColor(1.0, 1.0, 0.8, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glm::mat4 modelMatrix = glm::mat4();
@@ -483,11 +496,11 @@ void draw() {
 
         // glViewport(0, 0, windowWidth, windowHeight);
         // glClearColor(0.00, 0.33, 0.62, 1.0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[0]);
 
         glViewport(0, 0, windowWidth, windowHeight);
-        glClearColor(1.00, 1.00, 1.00, 1.0);
+        glClearColor(1.0, 1.0, 0.8, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glUseProgram(shaderProgramGetDepth);
 
@@ -504,7 +517,6 @@ void draw() {
 
         glDepthMask(GL_TRUE);
         glDisable(GL_PROGRAM_POINT_SIZE);
-
     }
 
 
@@ -518,7 +530,7 @@ void draw() {
 
 
         glViewport(0, 0, windowWidth, windowHeight);
-        glClearColor(1.0, 1.0, 1.0, 1.0);
+        glClearColor(1.0, 1.0, 0.8, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
         glBindTexture(GL_TEXTURE_2D, color_texts[0]);
@@ -544,7 +556,7 @@ void draw() {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         glDepthMask(GL_TRUE);
-        glDisable(GL_PROGRAM_POINT_SIZE);
+        //glDisable(GL_PROGRAM_POINT_SIZE);
     }
 
         //smooth in y direction
@@ -552,11 +564,11 @@ void draw() {
         //glEnable(GL_PROGRAM_POINT_SIZE);
         glDisable(GL_PROGRAM_POINT_SIZE);
 
-        glBindFramebuffer(GL_FRAMEBUFFER,framebuffers[2]);
+        glBindFramebuffer(GL_FRAMEBUFFER,framebuffers[0]);
 
 
         glViewport(0, 0, windowWidth, windowHeight);
-        glClearColor(1.0, 1.0, 1.0, 1.0);
+        glClearColor(1.0, 1.0, 0.8, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
         glBindTexture(GL_TEXTURE_2D, color_texts[1]);
@@ -588,10 +600,6 @@ void draw() {
 
     //draw surface
     {
-        // //Depth testing
-        // glEnable(GL_DEPTH_TEST);  
-        // glDepthMask(GL_FALSE);  
-        // glDepthFunc(GL_LESS); 
 
         glEnable(GL_PROGRAM_POINT_SIZE);
         //glDisable(GL_PROGRAM_POINT_SIZE);
@@ -600,10 +608,10 @@ void draw() {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         glViewport(0, 0, windowWidth, windowHeight);
-        glClearColor(0.00, 0.33, 0.62, 1.0);
+        glClearColor(1.0, 1.0, 0.8, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
-        glBindTexture(GL_TEXTURE_2D, color_texts[2]);
+        glBindTexture(GL_TEXTURE_2D, color_texts[0]);
         //glBindTexture(GL_TEXTURE_2D, depth_text);
 
         glUseProgram( shaderProgramSurface);
@@ -628,17 +636,17 @@ void draw() {
 
    // Draw ground
     {
-        // glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        // glUseProgram(shaderProgram);
+        glUseProgram(shaderProgram);
 
-        // // set camera matrix
-        // glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uModelViewProjection"), 1, GL_FALSE, glm::value_ptr(modelViewProj));
+        // set camera matrix
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uModelViewProjection"), 1, GL_FALSE, glm::value_ptr(modelViewProj));
 
-        // // bind VAO
-        // glBindVertexArray(vertexArrayObjectTriangle);
-        // // draw the first 2 indices as a triangle list
-        // glDrawElements(GL_TRIANGLES, 3 * 2, GL_UNSIGNED_SHORT, 0);
+        // bind VAO
+        glBindVertexArray(vertexArrayObjectTriangle);
+        // draw the first 2 indices as a triangle list
+        glDrawElements(GL_TRIANGLES, 3 * 2, GL_UNSIGNED_SHORT, 0);
     }
     // // Draw particles
     // {
