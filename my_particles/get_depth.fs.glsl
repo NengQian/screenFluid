@@ -15,7 +15,7 @@ out vec4 fColor;
 
 void main() {
 
-	if(vDensity<200)
+	if(vDensity<500)
 		discard;
 
 	vec3 normal;

@@ -588,11 +588,16 @@ void draw() {
 
     //draw surface
     {
+        // //Depth testing
+        // glEnable(GL_DEPTH_TEST);  
+        // glDepthMask(GL_FALSE);  
+        // glDepthFunc(GL_LESS); 
+
         glEnable(GL_PROGRAM_POINT_SIZE);
         //glDisable(GL_PROGRAM_POINT_SIZE);
+ 
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 
         glViewport(0, 0, windowWidth, windowHeight);
         glClearColor(0.00, 0.33, 0.62, 1.0);

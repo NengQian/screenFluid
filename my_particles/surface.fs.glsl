@@ -80,10 +80,10 @@ void main() {
 
 
 
-	// vec3 lightDir = vec3(0.0, -1.0, 0.0);
-	// vec3 squadColor = vec3(1.0, 0.5, 1.0);
-	// vec3 ambientLight = vec3(0.1, 0.1, 0.3);
+	vec3 lightDir = vec3(0.0, -1.0, 0.0);
+	vec3 squadColor = vec3(1.0, 0.5, 1.0);
+	vec3 ambientLight = vec3(0.1, 0.1, 0.3);
 
-    // float diffuse = max(0.0, dot(n, lightDir));
-	// fColor = diffuse * squadColor + ambientLight;
+    float diffuse = max(0.0, dot(normalize(n), lightDir));
+	fColor = diffuse * squadColor + ambientLight;
 }

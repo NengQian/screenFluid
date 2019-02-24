@@ -33,9 +33,11 @@ void main(void)
 	//2.0 -> blur by two pixels, etc.
     vec4 projVoxel = uProjectionMatrix * vec4(uSpriteSize, uSpriteSize, curDepth, 1.0);
     vec2 projSize = uScreenSize * projVoxel.xy / projVoxel.w;   // here we just want to calculate the sprite size at p.z this distance... So if the z bigger, the sprite smaller.
-    float blur = (0.00)*(projSize.x+projSize.y); // radius of a particle
-    if(blur > 20.0)
-        blur = 20.0;
+    float blur = 3*(0.25)*(projSize.x+projSize.y); // radius of a particle
+    if (blur < 1.0f)
+        blur = 1.0f;
+    if (blur > 10.0f)
+        blur = 10.0f;
 	//float blur = 1; //  
 
     const float guass_weight[] = float[9](
