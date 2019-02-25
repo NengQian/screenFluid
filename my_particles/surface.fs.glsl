@@ -8,7 +8,7 @@ uniform float uNormdepth;
 uniform sampler2D tex;  
 
 
-in vec4 vEyeSpacePosition;
+//in vec4 vEyeSpacePosition;
 out vec3 fColor;
 
 
@@ -39,19 +39,19 @@ vec3 getEyePos(vec2 texcoord)
 }
 
 void main() {
-	vec3 normal;
-	normal.xy = 2.0 * gl_PointCoord - 1.0;
-	float r1 = dot(normal.xy, normal.xy);
-	if (r1 > 1.0) {
-	    discard;
-	} 
+	// vec3 normal;
+	// normal.xy = 2.0 * gl_PointCoord - 1.0;
+	// float r1 = dot(normal.xy, normal.xy);
+	// if (r1 > 1.0) {
+	//     discard;
+	// } 
     float depth = texelFetch(tex, ivec2(gl_FragCoord.xy),0).x*uNormdepth;
 
     if(depth > uMaxdepth) // means this fragment is not in fluid, but in background
         discard;
 
-    //     float visDepth = depth*5 -5;
-    // fColor = vec3(visDepth,visDepth,visDepth);
+        float visDepth = depth*5 -5;
+    //fColor = vec3(visDepth,visDepth,visDepth);
     
     vec4 projVoxel = uProjectionMatrix * vec4(uSpriteSize, uSpriteSize, depth, 1.0);
     vec2 projSize = uScreenSize * projVoxel.xy / projVoxel.w;
@@ -80,10 +80,10 @@ void main() {
 
 
 
-	vec3 lightDir = vec3(0.0, -1.0, 0.0);
-	vec3 squadColor = vec3(0.3, 0.6, 1.0);
-	vec3 ambientLight = vec3(0.1, 0.1, 0.3);
+	// vec3 lightDir = vec3(0.0, -1.0, 0.0);
+	// vec3 squadColor = vec3(0.3, 0.6, 1.0);
+	// vec3 ambientLight = vec3(0.1, 0.1, 0.3);
 
-    float diffuse = max(0.0, dot(normalize(n), lightDir));
-	fColor = diffuse * squadColor + ambientLight;
+    // float diffuse = max(0.0, dot(normalize(n), lightDir));
+	// fColor = diffuse * squadColor + ambientLight;
 }

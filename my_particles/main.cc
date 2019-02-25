@@ -54,6 +54,8 @@ GLuint shaderProgramParticle;
 GLuint shaderProgramGetDepth;
 GLuint shaderProgramSmooth;
 GLuint shaderProgramSurface;
+GLuint shaderAnderas;
+
 
 glm::vec3 cameraPos = glm::vec3(0, 0, 0.5);
 glm::vec3 cameraTarget = glm::vec3(0, 0, 0);
@@ -180,6 +182,8 @@ void initResources() {
         glAttachShader(shaderProgramGetDepth, fragmentShader);
         glLinkProgram(shaderProgramGetDepth);
 
+        GLint isLinked = 0;
+        glGetProgramiv( shaderProgramGetDepth, GL_LINK_STATUS, &isLinked);
         // delete unused shader
         glDeleteShader(vertexShader);
         glDeleteShader(fragmentShader);
@@ -219,35 +223,35 @@ void initResources() {
 
 
         // create shader (smooth shader)
-    {
-        GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-        GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-        // setup shader source
-        std::string codeVS = readFile("postprocessing.vs.glsl");
-        std::string codeFS = readFile("smooth.fs.glsl");
-        const char *cVS = codeVS.c_str(), *cFS = codeFS.c_str();
-        glShaderSource(vertexShader, 1, &cVS, nullptr);
-        glShaderSource(fragmentShader, 1, &cFS, nullptr);
-        // compile shader
-        glCompileShader(vertexShader);
-        glCompileShader(fragmentShader);
-        checkShader(vertexShader);
-        checkShader(fragmentShader);
+    // {
+    //     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    //     GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    //     // setup shader source
+    //     std::string codeVS = readFile("postprocessing.vs.glsl");
+    //     std::string codeFS = readFile("smooth.fs.glsl");
+    //     const char *cVS = codeVS.c_str(), *cFS = codeFS.c_str();
+    //     glShaderSource(vertexShader, 1, &cVS, nullptr);
+    //     glShaderSource(fragmentShader, 1, &cFS, nullptr);
+    //     // compile shader
+    //     glCompileShader(vertexShader);
+    //     glCompileShader(fragmentShader);
+    //     checkShader(vertexShader);
+    //     checkShader(fragmentShader);
 
-        // create shader program
-         shaderProgramSmooth = glCreateProgram();
-        glAttachShader( shaderProgramSmooth, vertexShader);
-        glAttachShader( shaderProgramSmooth, fragmentShader);
-        glLinkProgram( shaderProgramSmooth);
+    //     // create shader program
+    //      shaderProgramSmooth = glCreateProgram();
+    //     glAttachShader( shaderProgramSmooth, vertexShader);
+    //     glAttachShader( shaderProgramSmooth, fragmentShader);
+    //     glLinkProgram( shaderProgramSmooth);
 
-        GLint isLinked = 0;
-        glGetProgramiv( shaderProgramSmooth, GL_LINK_STATUS, &isLinked);
+    //     GLint isLinked = 0;
+    //     glGetProgramiv( shaderProgramSmooth, GL_LINK_STATUS, &isLinked);
 
 
-        // delete unused shader
-        glDeleteShader(vertexShader);
-        glDeleteShader(fragmentShader);
-    }
+    //     // delete unused shader
+    //     glDeleteShader(vertexShader);
+    //     glDeleteShader(fragmentShader);
+    // }
 
 
         // create surface shader
@@ -255,7 +259,7 @@ void initResources() {
         GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
         GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
         // setup shader source
-        std::string codeVS = readFile("particles.vs.glsl");
+        std::string codeVS = readFile("postprocessing.vs.glsl");
         std::string codeFS = readFile("surface.fs.glsl");
         const char *cVS = codeVS.c_str(), *cFS = codeFS.c_str();
         glShaderSource(vertexShader, 1, &cVS, nullptr);
@@ -278,6 +282,44 @@ void initResources() {
         // delete unused shader
         glDeleteShader(vertexShader);
         glDeleteShader(fragmentShader);
+    }
+
+
+    // create andreas shader
+    {
+        GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+        GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+        GLuint geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
+        // setup shader source
+        std::string codeVS = readFile("andreas.vs.glsl");
+        std::string codeFS = readFile("andreas.fs.glsl");
+        std::string codeGS = readFile("andreas.gs.glsl");
+        const char *cVS = codeVS.c_str(), *cFS = codeFS.c_str(), *cGS = codeGS.c_str();
+        glShaderSource(vertexShader, 1, &cVS, nullptr);
+        glShaderSource(fragmentShader, 1, &cFS, nullptr);
+        glShaderSource(geometryShader, 1, &cGS, nullptr);
+        // compile shader
+        glCompileShader(vertexShader);
+        glCompileShader(fragmentShader);
+        glCompileShader(geometryShader);
+        checkShader(vertexShader);
+        checkShader(fragmentShader);
+        checkShader(geometryShader);
+
+        // create shader program
+         shaderAnderas = glCreateProgram();
+        glAttachShader( shaderAnderas, vertexShader);
+        glAttachShader( shaderAnderas, fragmentShader);
+        glAttachShader( shaderAnderas, geometryShader);
+        glLinkProgram( shaderAnderas);
+
+        GLint isLinked = 0;
+        glGetProgramiv( shaderAnderas, GL_LINK_STATUS, &isLinked);
+
+        // delete unused shader
+        glDeleteShader(vertexShader);
+        glDeleteShader(fragmentShader);
+        glDeleteShader(geometryShader);
     }
 
     // ============================
@@ -475,25 +517,67 @@ void draw() {
     }
 
     glViewport(0, 0, windowWidth, windowHeight);
-    glClearColor(1.0, 1.0, 0.8, 1.0);
+    glClearColor(0.0, 1.0, 0.8, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glm::mat4 modelMatrix = glm::mat4();
     glm::mat4 projMatrix = glm::perspective(glm::pi<float>() / 2.0f, windowWidth / (float) windowHeight, 1.0f, 7.0f);
+    glm::mat4 invProjMatrix = glm::inverse(projMatrix);
     glm::mat4 viewMatrix = interactiveView(&cameraPos, &cameraTarget);
     glm::mat4 modelViewProj = projMatrix * viewMatrix * modelMatrix;
     glm::mat4 modelViewMatrix = viewMatrix * modelMatrix;
     glm::vec2 screenSize = glm::vec2(windowWidth, windowHeight);
     float maxDepth = 7.0;
     float normalDepth = 10.0;
-    float spriteSize = 0.20;
+    float spriteSize = 0.10;
+    glDepthRange(0,1);
 
  
 
-    // get depth
+    //get depth
     {
-        glEnable(GL_PROGRAM_POINT_SIZE);
+        // glEnable(GL_PROGRAM_POINT_SIZE);
+        // glDepthMask(GL_TRUE);
+        // glEnable(GL_DEPTH_TEST);
+        // glDepthFunc(GL_LESS);
+        // // glViewport(0, 0, windowWidth, windowHeight);
+        // // glClearColor(0.00, 0.33, 0.62, 1.0);
+        // // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        // glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+        // glViewport(0, 0, windowWidth, windowHeight);
+        // glClearColor(0.0, 1.0, 0.8, 1.0);
+        // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        // glUseProgram(shaderProgramGetDepth);
+
+        // glUniformMatrix4fv(glGetUniformLocation(shaderProgramGetDepth, "uModelViewMatrix"), 1, GL_FALSE, glm::value_ptr(modelViewMatrix));
+        // glUniformMatrix4fv(glGetUniformLocation(shaderProgramGetDepth, "uProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(projMatrix));
+        // glUniform2fv(glGetUniformLocation(shaderProgramGetDepth, "uScreenSize"), 1, glm::value_ptr(screenSize));
+        // glUniform1f(glGetUniformLocation(shaderProgramGetDepth, "uSpriteSize"), spriteSize);
+        // glUniform1f(glGetUniformLocation( shaderProgramGetDepth, "uNormdepth"), normalDepth);
+
+
+        // glBindVertexArray(vertexArrayObjectParticles);
+        // //std::cout<<"totoal_p" << total_p <<std::endl;
+        // glDrawArraysInstanced(GL_POINTS, 0, total_p, total_p);
+        // //glDrawArrays(GL_POINTS, 0, total_p);
+
+        // glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        // // glDepthMask(GL_TRUE);
+        // // glDisable(GL_PROGRAM_POINT_SIZE);
+
+
+
+    }
+
+
+        // Anderas shader
+    {
+        //glEnable(GL_PROGRAM_POINT_SIZE);
+        glDepthMask(GL_TRUE);
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
         // glViewport(0, 0, windowWidth, windowHeight);
         // glClearColor(0.00, 0.33, 0.62, 1.0);
         // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -502,107 +586,118 @@ void draw() {
         glViewport(0, 0, windowWidth, windowHeight);
         glClearColor(1.0, 1.0, 0.8, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glUseProgram(shaderProgramGetDepth);
+        glUseProgram(shaderAnderas);
 
-        glUniformMatrix4fv(glGetUniformLocation(shaderProgramGetDepth, "uModelViewMatrix"), 1, GL_FALSE, glm::value_ptr(modelViewMatrix));
-        glUniformMatrix4fv(glGetUniformLocation(shaderProgramGetDepth, "uProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(projMatrix));
-        glUniform2fv(glGetUniformLocation(shaderProgramGetDepth, "uScreenSize"), 1, glm::value_ptr(screenSize));
-        glUniform1f(glGetUniformLocation(shaderProgramGetDepth, "uSpriteSize"), spriteSize);
-        glUniform1f(glGetUniformLocation( shaderProgramGetDepth, "uNormdepth"), normalDepth);
+
+        glUniformMatrix4fv(glGetUniformLocation(shaderAnderas, "view"), 1, GL_FALSE, glm::value_ptr(modelViewMatrix));
+        glUniformMatrix4fv(glGetUniformLocation(shaderAnderas, "projection"), 1, GL_FALSE, glm::value_ptr(projMatrix));
+        glUniformMatrix4fv(glGetUniformLocation(shaderAnderas, "inv_projection"), 1, GL_FALSE, glm::value_ptr(invProjMatrix));
+
+        glUniform1f(glGetUniformLocation(shaderAnderas, "viewport_width"), screenSize.x);
+        glUniform1f(glGetUniformLocation(shaderAnderas, "viewport_height"), screenSize.y);
+        glUniform1f(glGetUniformLocation(shaderAnderas, "near_plane_dist"), 1.0);
+
+        glUniform1f(glGetUniformLocation(shaderAnderas, "radius"), spriteSize);
+        glUniform1f(glGetUniformLocation( shaderAnderas, "uNormdepth"), normalDepth);
+
 
 
         glBindVertexArray(vertexArrayObjectParticles);
-        glDrawArraysInstanced(GL_POINTS, 0, total_p, total_p);
+        glDrawArrays(GL_POINTS, 0, total_p);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        glDepthMask(GL_TRUE);
-        glDisable(GL_PROGRAM_POINT_SIZE);
+        // glDepthMask(GL_TRUE);
+        // glDisable(GL_PROGRAM_POINT_SIZE);
     }
 
 
 
-    //smooth in x direction
-    {
-        //glEnable(GL_PROGRAM_POINT_SIZE);
-        glDisable(GL_PROGRAM_POINT_SIZE);
-        //glDisable(GL_DEPTH_TEST);
-        glBindFramebuffer(GL_FRAMEBUFFER,framebuffers[1]);
+
+   // smooth in x direction
+    // {
+    //     //glEnable(GL_PROGRAM_POINT_SIZE);
+    //     glDisable(GL_PROGRAM_POINT_SIZE);
+    //     glDisable(GL_DEPTH_TEST);
+    //     glBindFramebuffer(GL_FRAMEBUFFER,framebuffers[1]);
 
 
-        glViewport(0, 0, windowWidth, windowHeight);
-        glClearColor(1.0, 1.0, 0.8, 1.0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //     glViewport(0, 0, windowWidth, windowHeight);
+    //     glClearColor(1.0, 1.0, 0.8, 1.0);
+    //     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
-        glBindTexture(GL_TEXTURE_2D, color_texts[0]);
-        //glBindTexture(GL_TEXTURE_2D, depth_text);
+    //     glBindTexture(GL_TEXTURE_2D, color_texts[0]);
+    //     //glBindTexture(GL_TEXTURE_2D, depth_text);
 
-        glUseProgram( shaderProgramSmooth);
+    //     glUseProgram( shaderProgramSmooth);
 
-        glUniformMatrix4fv(glGetUniformLocation( shaderProgramSmooth, "uModelViewMatrix"), 1, GL_FALSE, glm::value_ptr(modelViewMatrix));
-        glUniformMatrix4fv(glGetUniformLocation( shaderProgramSmooth, "uProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(projMatrix));
-        glUniform2fv(glGetUniformLocation( shaderProgramSmooth, "uScreenSize"), 1, glm::value_ptr(screenSize));
-        glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uSpriteSize"), spriteSize);
-        glm::vec2 dir_x = glm::vec2(1.0, 0.0);
-        glUniform2fv(glGetUniformLocation( shaderProgramSmooth, "dir"),1 ,glm::value_ptr(dir_x));
-        glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uNormdepth"), normalDepth);
-        glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uMaxdepth"), maxDepth);
-
-
-        glBindVertexArray(vertexArrayObjectParticles);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        //glDrawArraysInstanced(GL_POINTS, 0, total_p, total_p);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        glDepthMask(GL_TRUE);
-        //glDisable(GL_PROGRAM_POINT_SIZE);
-    }
-
-        //smooth in y direction
-    {
-        //glEnable(GL_PROGRAM_POINT_SIZE);
-        glDisable(GL_PROGRAM_POINT_SIZE);
-
-        glBindFramebuffer(GL_FRAMEBUFFER,framebuffers[0]);
+    //     glUniformMatrix4fv(glGetUniformLocation( shaderProgramSmooth, "uModelViewMatrix"), 1, GL_FALSE, glm::value_ptr(modelViewMatrix));
+    //     glUniformMatrix4fv(glGetUniformLocation( shaderProgramSmooth, "uProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(projMatrix));
+    //     glUniform2fv(glGetUniformLocation( shaderProgramSmooth, "uScreenSize"), 1, glm::value_ptr(screenSize));
+    //     glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uSpriteSize"), spriteSize);
+    //     glm::vec2 dir_x = glm::vec2(1.0, 0.0);
+    //     glUniform2fv(glGetUniformLocation( shaderProgramSmooth, "dir"),1 ,glm::value_ptr(dir_x));
+    //     glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uNormdepth"), normalDepth);
+    //     glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uMaxdepth"), maxDepth);
 
 
-        glViewport(0, 0, windowWidth, windowHeight);
-        glClearColor(1.0, 1.0, 0.8, 1.0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //     glBindVertexArray(vertexArrayObjectParticles);
+    //     glDrawArrays(GL_TRIANGLES, 0, 6);
+    //     glBindTexture(GL_TEXTURE_2D, 0);
+
+    //     //glDrawArraysInstanced(GL_POINTS, 0, total_p, total_p);
+    //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    //     glDepthMask(GL_TRUE);
+    //     //glDisable(GL_PROGRAM_POINT_SIZE);
+    // }
+
+    //     //smooth in y direction
+    // {
+    //     //glEnable(GL_PROGRAM_POINT_SIZE);
+    //     glDisable(GL_PROGRAM_POINT_SIZE);
+
+    //     glBindFramebuffer(GL_FRAMEBUFFER,framebuffers[0]);
+
+
+    //     glViewport(0, 0, windowWidth, windowHeight);
+    //     glClearColor(1.0, 1.0, 0.8, 1.0);
+    //     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
-        glBindTexture(GL_TEXTURE_2D, color_texts[1]);
-        //glBindTexture(GL_TEXTURE_2D, depth_text);
+    //     glBindTexture(GL_TEXTURE_2D, color_texts[1]);
+    //     //glBindTexture(GL_TEXTURE_2D, depth_text);
 
-        glUseProgram( shaderProgramSmooth);
+    //     glUseProgram( shaderProgramSmooth);
 
-        glUniformMatrix4fv(glGetUniformLocation( shaderProgramSmooth, "uModelViewMatrix"), 1, GL_FALSE, glm::value_ptr(modelViewMatrix));
-        glUniformMatrix4fv(glGetUniformLocation( shaderProgramSmooth, "uProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(projMatrix));
-        glUniform2fv(glGetUniformLocation( shaderProgramSmooth, "uScreenSize"), 1, glm::value_ptr(screenSize));
-        glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uSpriteSize"), spriteSize);
-        glm::vec2 dir_y = glm::vec2(0.0, 1.0);
-        glUniform2fv(glGetUniformLocation( shaderProgramSmooth, "dir"),1 ,glm::value_ptr(dir_y));
-        glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uNormdepth"), normalDepth);
-        glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uMaxdepth"), maxDepth);
+    //     glUniformMatrix4fv(glGetUniformLocation( shaderProgramSmooth, "uModelViewMatrix"), 1, GL_FALSE, glm::value_ptr(modelViewMatrix));
+    //     glUniformMatrix4fv(glGetUniformLocation( shaderProgramSmooth, "uProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(projMatrix));
+    //     glUniform2fv(glGetUniformLocation( shaderProgramSmooth, "uScreenSize"), 1, glm::value_ptr(screenSize));
+    //     glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uSpriteSize"), spriteSize);
+    //     glm::vec2 dir_y = glm::vec2(0.0, 1.0);
+    //     glUniform2fv(glGetUniformLocation( shaderProgramSmooth, "dir"),1 ,glm::value_ptr(dir_y));
+    //     glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uNormdepth"), normalDepth);
+    //     glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uMaxdepth"), maxDepth);
 
-        glBindVertexArray(vertexArrayObjectParticles);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        glBindTexture(GL_TEXTURE_2D, 0);
+    //     glBindVertexArray(vertexArrayObjectParticles);
+    //     glDrawArrays(GL_TRIANGLES, 0, 6);
+    //     glBindTexture(GL_TEXTURE_2D, 0);
 
-    //    glDrawArraysInstanced(GL_POINTS, 0, total_p, total_p);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    // //    glDrawArraysInstanced(GL_POINTS, 0, total_p, total_p);
+    //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        glDepthMask(GL_TRUE);
-        glDisable(GL_PROGRAM_POINT_SIZE);
-    }
+    //     glDepthMask(GL_TRUE);
+    //     glDisable(GL_PROGRAM_POINT_SIZE);
+    // }
 
 
 
     //draw surface
     {
 
-        glEnable(GL_PROGRAM_POINT_SIZE);
+        glDisable(GL_PROGRAM_POINT_SIZE);
         //glDisable(GL_PROGRAM_POINT_SIZE);
+        //glDepthMask(GL_TRUE);
+        glDisable(GL_DEPTH_TEST);
+        //glDepthFunc(GL_LESS);
  
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -623,9 +718,11 @@ void draw() {
         glUniform1f(glGetUniformLocation( shaderProgramSurface, "uMaxdepth"), maxDepth);
         glUniform1f(glGetUniformLocation( shaderProgramSurface, "uNormdepth"), normalDepth);
         glBindVertexArray(vertexArrayObjectParticles);
-        //glDrawArrays(GL_TRIANGLES, 0, 6);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
 
-        glDrawArraysInstanced(GL_POINTS, 0, total_p, total_p);
+        //glDrawArraysInstanced(GL_POINTS, 0, total_p, total_p);
+       // glDrawArrays(GL_TRIANGLES, 0, 6);
+
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -635,64 +732,23 @@ void draw() {
     }
 
    // Draw ground
-    {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        glUseProgram(shaderProgram);
-
-        // set camera matrix
-        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uModelViewProjection"), 1, GL_FALSE, glm::value_ptr(modelViewProj));
-
-        // bind VAO
-        glBindVertexArray(vertexArrayObjectTriangle);
-        // draw the first 2 indices as a triangle list
-        glDrawElements(GL_TRIANGLES, 3 * 2, GL_UNSIGNED_SHORT, 0);
-    }
-    // // Draw particles
     // {
-    //     // enable additive blending
-    //     //glEnable(GL_BLEND);
-    //     //glBlendFunc(GL_ONE, GL_ONE);
+    //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    //     // no clean??? neng
-
-    //     glEnable(GL_PROGRAM_POINT_SIZE);
-
-    //     // disable depth writing
-    //     //glDepthMask(GL_FALSE);
-
-    //     glUseProgram(shaderProgramParticle);
-
-    //     // bind frame buffer
-    //     //glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    //     glUseProgram(shaderProgram);
 
     //     // set camera matrix
-    //     glUniformMatrix4fv(glGetUniformLocation(shaderProgramParticle, "uModelViewMatrix"), 1, GL_FALSE, glm::value_ptr(modelViewMatrix));
-    //     glUniformMatrix4fv(glGetUniformLocation(shaderProgramParticle, "uProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(projMatrix));
-
-    //     glUniform2fv(glGetUniformLocation(shaderProgramParticle, "uScreenSize"), 1, glm::value_ptr(screenSize));
-    //     glUniform1f(glGetUniformLocation(shaderProgramParticle, "uSpriteSize"), 0.15);
-
-    //     int colorMode = 1; // 0: color map, 1: depth map, 2: normal map
-    //     glUniform1i(glGetUniformLocation(shaderProgramParticle, "uColorMode"), colorMode);
+    //     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uModelViewProjection"), 1, GL_FALSE, glm::value_ptr(modelViewProj));
 
     //     // bind VAO
-    //     glBindVertexArray(vertexArrayObjectParticles);
-    //     //glBindFramebuffer(GL_FRAMEBUFFER, framebuffer); // bind vbo
-    //     //glDrawBuffer(GL_COLOR_ATTACHMENT0);   // we will output the depth as color to this texture
-    //     // draw particles as instances
-    //     glDrawArraysInstanced(GL_POINTS, 0, total_p, total_p);
-
-    //     // reset state
-    //     //glDisable(GL_BLEND);
-    //     glDepthMask(GL_TRUE);
-    //     glDisable(GL_PROGRAM_POINT_SIZE);
-    //     //glBindFramebuffer(GL_FRAMEBUFFER, 0); // "unbind"
+    //     glBindVertexArray(vertexArrayObjectTriangle);
+    //     // draw the first 2 indices as a triangle list
+    //     glDrawElements(GL_TRIANGLES, 3 * 2, GL_UNSIGNED_SHORT, 0);
     // }
 }
 
 void onKeyPress(GLFWwindow *window, int key, int scancode, int action, int mods) {
-    // nothing special
+    ;// nothing special
 }
 
 // Add main() and helper implementations

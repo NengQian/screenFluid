@@ -52,6 +52,7 @@ void main(void)
         depth = depth/uNormdepth; // do normaization again
         sum += depth*guass_weight[i+4];   
     }
+    sum = sum*uNormdepth*5-5;
     color = vec4(sum,sum,sum,1.0);
     
 }            
