@@ -102,6 +102,8 @@ void initResources() {
     // ===========================
     // load simulation data
     load_particle_series("./dan_WCSPH_n10_t0001_10000_density.bin");
+    //load_particle_series("./my_hot_pot2.bin");
+
     total_p = particles_series[0].size();
 
     // ============================
@@ -508,7 +510,7 @@ void draw() {
 
 
         if (count < particles_series.size()-2)
-        	++count;
+        	count;
             
         // upload (with GL_STREAM_DRAW)
         glBindBuffer(GL_ARRAY_BUFFER, arrayBufferParticles);
@@ -612,82 +614,83 @@ void draw() {
 
 
 
+    for(int i =0;i<10;i++)
+{
+   //smooth in x direction
+    {
+        //glEnable(GL_PROGRAM_POINT_SIZE);
+        glDisable(GL_PROGRAM_POINT_SIZE);
+        glDisable(GL_DEPTH_TEST);
+        glBindFramebuffer(GL_FRAMEBUFFER,framebuffers[1]);
 
-   // smooth in x direction
-    // {
-    //     //glEnable(GL_PROGRAM_POINT_SIZE);
-    //     glDisable(GL_PROGRAM_POINT_SIZE);
-    //     glDisable(GL_DEPTH_TEST);
-    //     glBindFramebuffer(GL_FRAMEBUFFER,framebuffers[1]);
 
-
-    //     glViewport(0, 0, windowWidth, windowHeight);
-    //     glClearColor(1.0, 1.0, 0.8, 1.0);
-    //     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glViewport(0, 0, windowWidth, windowHeight);
+        glClearColor(1.0, 1.0, 1.0, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
-    //     glBindTexture(GL_TEXTURE_2D, color_texts[0]);
-    //     //glBindTexture(GL_TEXTURE_2D, depth_text);
+        glBindTexture(GL_TEXTURE_2D, color_texts[0]);
+        //glBindTexture(GL_TEXTURE_2D, depth_text);
 
-    //     glUseProgram( shaderProgramSmooth);
+        glUseProgram( shaderProgramSmooth);
 
-    //     glUniformMatrix4fv(glGetUniformLocation( shaderProgramSmooth, "uModelViewMatrix"), 1, GL_FALSE, glm::value_ptr(modelViewMatrix));
-    //     glUniformMatrix4fv(glGetUniformLocation( shaderProgramSmooth, "uProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(projMatrix));
-    //     glUniform2fv(glGetUniformLocation( shaderProgramSmooth, "uScreenSize"), 1, glm::value_ptr(screenSize));
-    //     glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uSpriteSize"), spriteSize);
-    //     glm::vec2 dir_x = glm::vec2(1.0, 0.0);
-    //     glUniform2fv(glGetUniformLocation( shaderProgramSmooth, "dir"),1 ,glm::value_ptr(dir_x));
-    //     glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uNormdepth"), normalDepth);
-    //     glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uMaxdepth"), maxDepth);
-
-
-    //     glBindVertexArray(vertexArrayObjectParticles);
-    //     glDrawArrays(GL_TRIANGLES, 0, 6);
-    //     glBindTexture(GL_TEXTURE_2D, 0);
-
-    //     //glDrawArraysInstanced(GL_POINTS, 0, total_p, total_p);
-    //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    //     glDepthMask(GL_TRUE);
-    //     //glDisable(GL_PROGRAM_POINT_SIZE);
-    // }
-
-    //     //smooth in y direction
-    // {
-    //     //glEnable(GL_PROGRAM_POINT_SIZE);
-    //     glDisable(GL_PROGRAM_POINT_SIZE);
-
-    //     glBindFramebuffer(GL_FRAMEBUFFER,framebuffers[0]);
+        glUniformMatrix4fv(glGetUniformLocation( shaderProgramSmooth, "uModelViewMatrix"), 1, GL_FALSE, glm::value_ptr(modelViewMatrix));
+        glUniformMatrix4fv(glGetUniformLocation( shaderProgramSmooth, "uProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(projMatrix));
+        glUniform2fv(glGetUniformLocation( shaderProgramSmooth, "uScreenSize"), 1, glm::value_ptr(screenSize));
+        glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uSpriteSize"), spriteSize);
+        glm::vec2 dir_x = glm::vec2(1.0, 0.0);
+        glUniform2fv(glGetUniformLocation( shaderProgramSmooth, "dir"),1 ,glm::value_ptr(dir_x));
+        glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uNormdepth"), normalDepth);
+        glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uMaxdepth"), maxDepth);
 
 
-    //     glViewport(0, 0, windowWidth, windowHeight);
-    //     glClearColor(1.0, 1.0, 0.8, 1.0);
-    //     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glBindVertexArray(vertexArrayObjectParticles);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        //glDrawArraysInstanced(GL_POINTS, 0, total_p, total_p);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        //glDepthMask(GL_TRUE);
+        //glDisable(GL_PROGRAM_POINT_SIZE);
+    }
+
+        //smooth in y direction
+    {
+        //glEnable(GL_PROGRAM_POINT_SIZE);
+      //  glDisable(GL_PROGRAM_POINT_SIZE);
+
+        glBindFramebuffer(GL_FRAMEBUFFER,framebuffers[0]);
+
+
+        glViewport(0, 0, windowWidth, windowHeight);
+        glClearColor(1.0, 1.0, 1.0, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
-    //     glBindTexture(GL_TEXTURE_2D, color_texts[1]);
-    //     //glBindTexture(GL_TEXTURE_2D, depth_text);
+        glBindTexture(GL_TEXTURE_2D, color_texts[1]);
+        //glBindTexture(GL_TEXTURE_2D, depth_text);
 
-    //     glUseProgram( shaderProgramSmooth);
+        glUseProgram( shaderProgramSmooth);
 
-    //     glUniformMatrix4fv(glGetUniformLocation( shaderProgramSmooth, "uModelViewMatrix"), 1, GL_FALSE, glm::value_ptr(modelViewMatrix));
-    //     glUniformMatrix4fv(glGetUniformLocation( shaderProgramSmooth, "uProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(projMatrix));
-    //     glUniform2fv(glGetUniformLocation( shaderProgramSmooth, "uScreenSize"), 1, glm::value_ptr(screenSize));
-    //     glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uSpriteSize"), spriteSize);
-    //     glm::vec2 dir_y = glm::vec2(0.0, 1.0);
-    //     glUniform2fv(glGetUniformLocation( shaderProgramSmooth, "dir"),1 ,glm::value_ptr(dir_y));
-    //     glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uNormdepth"), normalDepth);
-    //     glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uMaxdepth"), maxDepth);
+        glUniformMatrix4fv(glGetUniformLocation( shaderProgramSmooth, "uModelViewMatrix"), 1, GL_FALSE, glm::value_ptr(modelViewMatrix));
+        glUniformMatrix4fv(glGetUniformLocation( shaderProgramSmooth, "uProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(projMatrix));
+        glUniform2fv(glGetUniformLocation( shaderProgramSmooth, "uScreenSize"), 1, glm::value_ptr(screenSize));
+        glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uSpriteSize"), spriteSize);
+        glm::vec2 dir_y = glm::vec2(0.0, 1.0);
+        glUniform2fv(glGetUniformLocation( shaderProgramSmooth, "dir"),1 ,glm::value_ptr(dir_y));
+        glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uNormdepth"), normalDepth);
+        glUniform1f(glGetUniformLocation( shaderProgramSmooth, "uMaxdepth"), maxDepth);
 
-    //     glBindVertexArray(vertexArrayObjectParticles);
-    //     glDrawArrays(GL_TRIANGLES, 0, 6);
-    //     glBindTexture(GL_TEXTURE_2D, 0);
+        glBindVertexArray(vertexArrayObjectParticles);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glBindTexture(GL_TEXTURE_2D, 0);
 
-    // //    glDrawArraysInstanced(GL_POINTS, 0, total_p, total_p);
-    //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    //    glDrawArraysInstanced(GL_POINTS, 0, total_p, total_p);
+       glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    //     glDepthMask(GL_TRUE);
-    //     glDisable(GL_PROGRAM_POINT_SIZE);
-    // }
-
+     //   glDepthMask(GL_TRUE);
+     //   glDisable(GL_PROGRAM_POINT_SIZE);
+    }
+}
 
 
     //draw surface
@@ -696,7 +699,7 @@ void draw() {
         glDisable(GL_PROGRAM_POINT_SIZE);
         //glDisable(GL_PROGRAM_POINT_SIZE);
         //glDepthMask(GL_TRUE);
-        glDisable(GL_DEPTH_TEST);
+        //glEnable(GL_DEPTH_TEST);
         //glDepthFunc(GL_LESS);
  
 
@@ -721,7 +724,6 @@ void draw() {
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
         //glDrawArraysInstanced(GL_POINTS, 0, total_p, total_p);
-       // glDrawArrays(GL_TRIANGLES, 0, 6);
 
         glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -730,6 +732,45 @@ void draw() {
         glDepthMask(GL_TRUE);
         glDisable(GL_PROGRAM_POINT_SIZE);
     }
+
+            // Anderas shader for surface 
+    // {
+    //     //glEnable(GL_PROGRAM_POINT_SIZE);
+    //     glDepthMask(GL_TRUE);
+    //     glEnable(GL_DEPTH_TEST);
+    //     glDepthFunc(GL_LESS);
+    //     // glViewport(0, 0, windowWidth, windowHeight);
+    //     // glClearColor(0.00, 0.33, 0.62, 1.0);
+    //     // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //     glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[0]);
+
+    //     glViewport(0, 0, windowWidth, windowHeight);
+    //     glClearColor(1.0, 1.0, 0.8, 1.0);
+    //     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //     glUseProgram(shaderAnderas);
+
+
+    //     glUniformMatrix4fv(glGetUniformLocation(shaderAnderas, "view"), 1, GL_FALSE, glm::value_ptr(modelViewMatrix));
+    //     glUniformMatrix4fv(glGetUniformLocation(shaderAnderas, "projection"), 1, GL_FALSE, glm::value_ptr(projMatrix));
+    //     glUniformMatrix4fv(glGetUniformLocation(shaderAnderas, "inv_projection"), 1, GL_FALSE, glm::value_ptr(invProjMatrix));
+
+    //     glUniform1f(glGetUniformLocation(shaderAnderas, "viewport_width"), screenSize.x);
+    //     glUniform1f(glGetUniformLocation(shaderAnderas, "viewport_height"), screenSize.y);
+    //     glUniform1f(glGetUniformLocation(shaderAnderas, "near_plane_dist"), 1.0);
+
+    //     glUniform1f(glGetUniformLocation(shaderAnderas, "radius"), spriteSize);
+    //     glUniform1f(glGetUniformLocation( shaderAnderas, "uNormdepth"), normalDepth);
+
+
+
+    //     glBindVertexArray(vertexArrayObjectParticles);
+    //     glDrawArrays(GL_POINTS, 0, total_p);
+    //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        // glDepthMask(GL_TRUE);
+        // glDisable(GL_PROGRAM_POINT_SIZE);
+    // }
+
 
    // Draw ground
     // {
