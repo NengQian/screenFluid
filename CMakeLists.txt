@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(cg1-ogl-revamp)
+project(screenFluid)
 
 # set bin dir
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY bin)
@@ -24,32 +24,35 @@ add_definitions(-std=c++14)
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-
+set(CMAKE_BUILD_TYPE "Release")
 # add sub-progs
 include_directories(common)
-add_subdirectory(minimal)
-add_subdirectory(triangle-1)
-add_subdirectory(triangle-2)
-add_subdirectory(cube-1)
-add_subdirectory(cube-2)
-add_subdirectory(geoshader-1)
-add_subdirectory(geoshader-2)
-add_subdirectory(geoshader-3)
-add_subdirectory(geoshader-4)
-add_subdirectory(texture-1)
-add_subdirectory(texture-2)
-add_subdirectory(texture-3)
-add_subdirectory(tesselation-1)
-add_subdirectory(tesselation-2)
-add_subdirectory(tesselation-3)
-add_subdirectory(tesselation-4)
-add_subdirectory(instancing-1)
-add_subdirectory(fbo-1)
-add_subdirectory(obj-1)
-add_subdirectory(deferred-1)
-add_subdirectory(my_particles)
-add_subdirectory(particles-1)
-add_subdirectory(particles-2)
-add_subdirectory(blur-1)
-add_subdirectory(shadows-1)
-add_subdirectory(shadows-2)
+
+# Setting EIGEN3_ROOT here lets us override which Eigen library merely3d chooses
+set(EIGEN3_ROOT ${PROJECT_SOURCE_DIR}/extern/eigen_3.3.4)
+message("eigen3 root is" ${EIGEN3_ROOT})
+
+# Setting CEREALS_ROOT here
+set(CEREALS_ROOT ${PROJECT_SOURCE_DIR}/extern/cereal/include)
+
+set(SOURCE_FILES
+        src/math_types.hpp
+        src/sim_loader.hpp
+        src/sim_loader.cpp
+        src/sim_record.hpp
+        src/Particle.hpp
+)
+
+
+
+
+
+# prepare target
+add_library(my_particlea_lib STATIC ${SOURCE_FILES})
+target_include_directories(my_particlea_lib PUBLIC ${EIGEN3_ROOT} ${CEREALS_ROOT}  ${SOURCE_FILES})
+target_link_libraries(my_particlea_lib glm soil2 glfw glad ${GLFW_LIBRARIES})
+
+
+add_executable(screenFluid src/main.cc)
+target_link_libraries(screenFluid my_particlea_lib)
+
